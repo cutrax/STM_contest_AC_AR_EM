@@ -50,7 +50,7 @@ void USART2_myInit(void);
 
 int main(void)
 {
-  myUSART2_Init();asdasdasdas
+  myUSART2_Init();
   myLED_Init();
   mySWITCH_Init();
   /* Infinite loop */
