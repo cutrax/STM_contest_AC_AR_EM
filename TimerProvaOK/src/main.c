@@ -106,7 +106,7 @@ void TIM3_IRQHandler(void) ///Mannaggia all'underscore!!!
 	{
 		tick++; //Incrementa la time base
 
-		if((tick%12)==0) //Ogni tre secondi toggla
+		if((tick%4)==0) //Ogni tre secondi toggla
 			{
 				GPIO_ToggleBits(GPIOA,GPIO_Pin_5);
 			}
