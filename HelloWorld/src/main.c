@@ -1,4 +1,3 @@
-/*prova Alfonso 08/08/2018 16:01*/
 /*
 ******************************************************************************
 File:     main.c
@@ -60,7 +59,7 @@ int main(void)
 while (1)
   {
 	//GPIO_SetBits(GPIOA, GPIO_Pin_5);
-	if(GPIO_ReadInputDataBitCOSINONFUNZIONAPIU_NIENTE(GPIOC, GPIO_Pin_13) == 0){
+	if(GPIO_ReadInputDataBit(GPIOC, GPIO_Pin_13) == 0){
 		GPIO_SetBits(GPIOA, GPIO_Pin_5);
 }
 	else{
