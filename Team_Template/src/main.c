@@ -46,8 +46,6 @@ SOFTWARE.
 **===========================================================================
 */
 
-void USART2_myInit(void);
-
 int main(void)
 {
   myUSART2_Init();
