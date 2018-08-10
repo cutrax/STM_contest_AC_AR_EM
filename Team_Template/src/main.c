@@ -32,6 +32,7 @@ SOFTWARE.
 /* Includes */
 #include "stm32f4xx.h"
 #include <stdio.h>
+#include <math.h>
 #include "myLib.h"
 /* Private macro */
 /* Private variables */
@@ -49,13 +50,13 @@ SOFTWARE.
 int main(void)
 {
   myUSART2_Init();
-  myLED_Init();
-  mySWITCH_Init();
+  myMEMSBoard_Init();
   /* Infinite loop */
   while (1)
   {
-	  printf("Hello world\r\n");
-	  GPIO_WriteBit(GPIOA,GPIO_Pin_5,GPIO_ReadInputDataBit(GPIOC,GPIO_Pin_13));
+	  myDelay_ms(1000);
+	  printf("Pressione: %d hPa\r\n",(int)myBar_Get());
+	  printf("Temperatura: %d *C; Umidità: %d \r\n",(int)roundf(myTemp_Get()), (int) myHum_Get());
   }
 }
 
