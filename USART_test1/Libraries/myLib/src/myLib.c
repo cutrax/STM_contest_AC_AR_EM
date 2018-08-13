@@ -33,16 +33,17 @@ ADC_CommonInit(&ADC_CommonInitStructure);
 
 ADC_InitStructure.ADC_Resolution = ADC_Resolution_12b;
 ADC_InitStructure.ADC_ScanConvMode = DISABLE;
-ADC_InitStructure.ADC_ContinuousConvMode = DISABLE;
+ADC_InitStructure.ADC_ContinuousConvMode = ENABLE;
 ADC_InitStructure.ADC_ExternalTrigConvEdge = ADC_ExternalTrigConvEdge_None;
+ADC_InitStructure.ADC_ExternalTrigConv = ADC_ExternalTrigConv_T1_CC1;
 ADC_InitStructure.ADC_DataAlign = ADC_DataAlign_Right;
-ADC_InitStructure.ADC_NbrOfConversion = 10;
+ADC_InitStructure.ADC_NbrOfConversion = 1;
 ADC_Init(ADC1, &ADC_InitStructure);
 
-ADC_ContinuousModeCmd(ADC1, ENABLE); //Abilito il modo di conversione continuo
-ADC_RegularChannelConfig(ADC1, ADC_Channel_TempSensor  , 1, ADC_SampleTime_15Cycles); //Attivo il canale 16
-ADC_TempSensorVrefintCmd(ENABLE); //Abilito il sensore di temperatura
+//ADC_ContinuousModeCmd(ADC1, ENABLE); //Abilito il modo di conversione continuo
+ADC_RegularChannelConfig(ADC1, ADC_Channel_TempSensor  , 1, ADC_SampleTime_144Cycles); //Attivo il canale 16
 ADC_EOCOnEachRegularChannelCmd(ADC1, ENABLE); //Abilito l'end of conversion
+
 
 ADC_ITConfig(ADC1, ADC_IT_EOC, ENABLE); //Abilito l'interrupt su EOC
 //ADC_TempSensorVrefintCmd(ENABLE); //Abilito il sensore di temperatura
@@ -55,7 +56,7 @@ ADC_ITConfig(ADC1, ADC_IT_EOC, ENABLE); //Abilito l'interrupt su EOC
   NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
   NVIC_Init(&NVIC_InitStructure);
 
-
+ADC_TempSensorVrefintCmd(ENABLE); //Abilito il sensore di temperatura
 ADC_Cmd(ADC1, ENABLE); //Abilito l'ADC
 
 }

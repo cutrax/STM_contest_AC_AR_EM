@@ -58,6 +58,11 @@ int main(void)
 
   ADC_SoftwareStartConv(ADC1);
 
+
+  /*if(ADC_GetSoftwareStartConvStatus(ADC1) == RESET){
+	  printf("Ho iniziato la conversione\n");
+  }*/
+
   //Adesso funziona, dare un'occhiata ai tempi di conversione per effettuare conversioni multiple
 
   //ADC_TempSensorVrefintCmd(ENABLE);
@@ -68,11 +73,11 @@ int main(void)
   ADC_TempSensorVrefintCmd(ENABLE); //Abilito il sensore di temperatura
   ADC_Cmd(ADC1, ENABLE); //Abilito l'ADC */
 
-
   /* Infinite loop */
   //printf("Hello World!\n");
   while (1)
   {
+	  //printf("Hello World!\n");
 	  /*if((GPIO_ReadInputDataBit(GPIOC,GPIO_Pin_13) == 0))
 	  	{
 	  		if(USART_GetFlagStatus(USART2,USART_FLAG_RXNE) == SET) //Se ci sono dati in arrivo
@@ -98,19 +103,38 @@ int main(void)
 void ADC_IRQHandler(void)
 {
 	uint16_t conversionValue;
+
 	//float tempValue;
 
 	if((ADC_GetITStatus(ADC1, ADC_IT_EOC)) == SET){
-        GPIO_SetBits(GPIOA, GPIO_Pin_5);
-        //ADC_ClearFlag(ADC1, ADC_FLAG_EOC);
-		conversionValue = ADC_GetConversionValue(ADC1);
-		printf("Ho convertito\n");
-		//ADC_ClearFlag(ADC1, ADC_FLAG_EOC);
-	//	ADC_ClearFlag(ADC1, ADC_FLAG_EOC);
-		ADC_SoftwareStartConv(ADC1);
-		ADC_ClearITPendingBit(ADC1, ADC_IT_EOC);
 
-		}
+        GPIO_ToggleBits(GPIOA, GPIO_Pin_5);
+        //ADC_ClearFlag(ADC1, ADC_FLAG_EOC);
+
+		conversionValue = ADC_GetConversionValue(ADC1);
+
+		/*
+		conversionValue*= 3000.0;
+		conversionValue/= 0xFFF;
+		conversionValue/= 1000.0;
+		conversionValue -= 0.760;
+		conversionValue /= 0.0025;
+
+		conversionValue+= 25.0; */
+
+		printf("Ho convertito\n");
+		printf("Il valore convertito presente nel registro e' %d\n", conversionValue);
+		//ADC_ClearFlag(ADC1, ADC_FLAG_EOC);
+		//ADC_ClearFlag(ADC1, ADC_FLAG_EOC);
+		//ADC_SoftwareStartConv(ADC1);
+		//ADC_ClearITPendingBit(ADC1, ADC_IT_EOC);
+		/*if(ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC) == RESET)
+				{
+					printf("EOC disabilitato\n");
+					ADC_SoftwareStartConv(ADC1);
+				}*/
+		ADC_ClearITPendingBit(ADC1, ADC_IT_EOC);
+	}
 
 }
 
