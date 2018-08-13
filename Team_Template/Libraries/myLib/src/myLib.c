@@ -292,18 +292,54 @@ void myI2C_WriteReg(uint8_t BaseAddr,uint8_t Reg, uint8_t Data)
 void myMEMSBoard_Init(void)
 {
 	myI2C_Init(); //Bus I2C
-/* Da implementare...
-//	myAccGyr_Init(); //Accelerometro
+// Da implementare...
+	myAccGyr_Init(); //Al momento solo accelerometro
 //	myMag_Init(); //Magnetometro
-*/
+
 	myBar_Init(); //Barometro
 	myHumTemp_Init(); //Umidità e Temperatura
 
+
 }
 
-/*
+/*myAccGyr_Init()
+ * Disabilita (al momento, per semplicità) il giroscopio
+ * e tiene abilitato solo l'accelerometro
  *
  */
+
+void myAccGyr_Init(void)
+{
+	// Giroscopio in power-down mode
+	myI2C_WriteReg(0xD6, 0x10, 0x00);
+	//"Accendo" l'accelerometro
+	myI2C_WriteReg(0xD6, 0x20, 0x43);
+	//Abilito le interruzioni quando il dato è pronto
+	//myI2C_WriteReg(0xD4, 0x0C, 0x41);
+}
+
+/*myAcc_Get_X, myAcc_Get_Y, myAcc_Get_Z
+ * Leggo l'accelerazione rispettivamente lungo
+ * gli assi X, Y, e Z.
+*/
+
+int myAcc_Get_X(void)
+{
+	u16 acc_x = myI2C_ReadReg(0xD6, 0x29) << 8 | myI2C_ReadReg(0xD6, 0x28);
+	return acc_x;
+}
+
+int myAcc_Get_Y(void)
+{
+	u16 acc_y = myI2C_ReadReg(0xD6, 0x2B) << 8 | myI2C_ReadReg(0xD6, 0x2A);
+	return acc_y;
+}
+
+int myAcc_Get_Z(void)
+{
+	u16 acc_z = myI2C_ReadReg(0xD6, 0x2D) << 8 | myI2C_ReadReg(0xD6, 0x2C);
+	return acc_z;
+}
 
 /*
  * myBar_Init

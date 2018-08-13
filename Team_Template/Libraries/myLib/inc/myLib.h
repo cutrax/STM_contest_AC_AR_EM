@@ -31,7 +31,7 @@ void myMEMSBoard_Init(void); //Inizializza la scheda IKS01A1 globalmente
 
 //Sensore accelerometro + giroscopio L6MSDS0
 void myAccGyr_Init(void); //Inizializza il sensore
-//Da completare
+//***Da completare: al momento è inizializzato solo l'accelerometro
 
 //Sensore magnetometro LIS3MDL
 void myMag_Init(void); //Inizializza il sensore
@@ -45,6 +45,11 @@ float myBar_Get(void); //Leggi la pressione
 void myHumTemp_Init(void); //Inizializza il sensore
 float myTemp_Get(void); //Leggi la temperatura
 float myHum_Get(void); //Leggi l'umidità relativa
+
+//***Sensore LSM6DS0
+int myAcc_Get_X(void); //Legge l'accelerazione lungo X
+int myAcc_Get_Y(void); //Legge l'accelerazione lungo Y
+int myAcc_Get_Z(void); //Legge l'accelerazione lungo Z
 
 void myDelay_ms(uint32_t del); //Delay approssimativo
 #endif /* MYLIB_INC_MYLIB_H_ */

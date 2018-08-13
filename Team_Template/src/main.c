@@ -55,8 +55,12 @@ int main(void)
   while (1)
   {
 	  myDelay_ms(1000);
-	  printf("Pressione: %d hPa\r\n",(int)myBar_Get());
-	  printf("Temperatura: %d *C; Umidità: %d \r\n",(int)roundf(myTemp_Get()), (int) myHum_Get());
+	 // printf("Pressione: %d hPa\r\n",(int)myBar_Get());
+	  //printf("Temperatura: %d *C; Umidità: %d \r\n",(int)roundf(myTemp_Get()), (int) myHum_Get());
+	  printf("Accelerazione lungo Z: %d\r\n", myAcc_Get_Z());
+	  printf("Accelerazione lungo X: %d\r\n", myAcc_Get_X());
+	  printf("Accelerazione lungo Y: %d\r\n\n", myAcc_Get_Y());
+
   }
 }
 
