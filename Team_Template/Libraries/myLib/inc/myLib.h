@@ -46,10 +46,14 @@ void myHumTemp_Init(void); //Inizializza il sensore
 float myTemp_Get(void); //Leggi la temperatura
 float myHum_Get(void); //Leggi l'umidità relativa
 
-//***Sensore LSM6DS0
+//***Sensore LSM6DS0 (accelerometro e giroscopio)
 int myAcc_Get_X(void); //Legge l'accelerazione lungo X
 int myAcc_Get_Y(void); //Legge l'accelerazione lungo Y
 int myAcc_Get_Z(void); //Legge l'accelerazione lungo Z
+
+int myGyr_Get_X(void); //Legge la velocità angolare lungo X
+int myGyr_Get_Y(void); //Legge la velocità angolare lungo Y
+int myGyr_Get_Z(void); //Legge la velocità angolare lungo Z
 
 void myDelay_ms(uint32_t del); //Delay approssimativo
 #endif /* MYLIB_INC_MYLIB_H_ */

@@ -303,15 +303,15 @@ void myMEMSBoard_Init(void)
 }
 
 /*myAccGyr_Init()
- * Disabilita (al momento, per semplicità) il giroscopio
- * e tiene abilitato solo l'accelerometro
+ * Abilito accelerometro e giroscopio
+ *
  *
  */
 
 void myAccGyr_Init(void)
 {
-	// Giroscopio in power-down mode
-	myI2C_WriteReg(0xD6, 0x10, 0x00);
+	// "Accendo" il giroscopio
+	myI2C_WriteReg(0xD6, 0x10, 0x40);
 	//"Accendo" l'accelerometro
 	myI2C_WriteReg(0xD6, 0x20, 0x43);
 	//Abilito le interruzioni quando il dato è pronto
@@ -340,6 +340,31 @@ int myAcc_Get_Z(void)
 	u16 acc_z = myI2C_ReadReg(0xD6, 0x2D) << 8 | myI2C_ReadReg(0xD6, 0x2C);
 	return acc_z;
 }
+
+/*
+ * myGyr_Get_X, myGyr_Get_Y, myGyr_Get_Z
+ * Leggo i valori della velocità angolare lungo
+ * X,Y, e Z.
+ */
+//Al momento per semplicità definite come int
+int myGyr_Get_X(void)
+{
+	u16 gyr_x = myI2C_ReadReg(0xD6, 0x19) << 8 | myI2C_ReadReg(0xD6, 0x18);
+	return gyr_x;
+}
+
+int myGyr_Get_Y(void)
+{
+	u16 gyr_y = myI2C_ReadReg(0xD6, 0x1B) << 8 | myI2C_ReadReg(0xD6, 0x1A);
+	return gyr_y;
+}
+
+int myGyr_Get_Z(void)
+{
+	u16 gyr_z = myI2C_ReadReg(0xD6, 0x1D) << 8 | myI2C_ReadReg(0xD6, 0x1C);
+	return gyr_z;
+}
+
 
 /*
  * myBar_Init
