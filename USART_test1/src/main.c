@@ -32,6 +32,7 @@ SOFTWARE.
 /* Includes */
 #include "stm32f4xx.h"
 #include <stdio.h>
+#include <math.h>
 #include "myLib.h"
 /* Private macro */
 /* Private variables */
@@ -103,36 +104,23 @@ int main(void)
 void ADC_IRQHandler(void)
 {
 	uint16_t conversionValue;
-
+	float T;
 	//float tempValue;
 
 	if((ADC_GetITStatus(ADC1, ADC_IT_EOC)) == SET){
 
         GPIO_ToggleBits(GPIOA, GPIO_Pin_5);
-        //ADC_ClearFlag(ADC1, ADC_FLAG_EOC);
 
 		conversionValue = ADC_GetConversionValue(ADC1);
 
-		/*
-		conversionValue*= 3000.0;
-		conversionValue/= 0xFFF;
-		conversionValue/= 1000.0;
-		conversionValue -= 0.760;
-		conversionValue /= 0.0025;
+		T = (float) conversionValue * 3.3 / 0xFFF;
+		T -= 0.760;
+		T /= 0.0025;
+		T+= 25.0;
 
-		conversionValue+= 25.0; */
-
-		printf("Ho convertito\n");
-		printf("Il valore convertito presente nel registro e' %d\n", conversionValue);
-		//ADC_ClearFlag(ADC1, ADC_FLAG_EOC);
-		//ADC_ClearFlag(ADC1, ADC_FLAG_EOC);
-		//ADC_SoftwareStartConv(ADC1);
-		//ADC_ClearITPendingBit(ADC1, ADC_IT_EOC);
-		/*if(ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC) == RESET)
-				{
-					printf("EOC disabilitato\n");
-					ADC_SoftwareStartConv(ADC1);
-				}*/
+		printf("Ho convertito\r\n");
+		printf("La temperatura e' %d.%d\r\n", (int) floor(T), (int)((T - floor(T))*10));
+		ADC_SoftwareStartConv(ADC1);
 		ADC_ClearITPendingBit(ADC1, ADC_IT_EOC);
 	}
 
