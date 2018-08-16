@@ -140,15 +140,33 @@ void myI2C_Init(void)
 
 	//Configura PB8 (SCL) e PB9 (SDA)
 	GPIO_StructInit(&pb89Init);
+	pb89Init.GPIO_Mode = GPIO_Mode_OUT;
+	pb89Init.GPIO_OType = GPIO_OType_OD;
+	pb89Init.GPIO_Pin = GPIO_Pin_8 | GPIO_Pin_9;
+	pb89Init.GPIO_PuPd = GPIO_PuPd_UP;
+	GPIO_Init(GPIOB,&pb89Init);
+
+	GPIO_WriteBit(GPIOB,GPIO_Pin_8,1); //SCL high
+	GPIO_WriteBit(GPIOB,GPIO_Pin_9,1); //SDA high
+
+	while((GPIO_ReadInputDataBit(GPIOB,GPIO_Pin_8) == 0) || (GPIO_ReadInputDataBit(GPIOB,GPIO_Pin_9) == 0));
+
+	GPIO_WriteBit(GPIOB,GPIO_Pin_9,0); //SDA low
+	while(GPIO_ReadInputDataBit(GPIOB,GPIO_Pin_9) != 0);
+
+	GPIO_WriteBit(GPIOB,GPIO_Pin_8,0); //SCL low
+	while(GPIO_ReadInputDataBit(GPIOB,GPIO_Pin_8) != 0);
+
+	GPIO_WriteBit(GPIOB,GPIO_Pin_8,1); //SCL high
+	while(GPIO_ReadInputDataBit(GPIOB,GPIO_Pin_8) != 1);
+
+	GPIO_WriteBit(GPIOB,GPIO_Pin_9,1); //SDA high
+	while(GPIO_ReadInputDataBit(GPIOB,GPIO_Pin_9) != 1);
 
 	//SCL e SDA devono essere open drain con pull-up, modo alternate
 	pb89Init.GPIO_Mode = GPIO_Mode_AF;
 
-	pb89Init.GPIO_OType = GPIO_OType_OD;
 
-	pb89Init.GPIO_Pin = GPIO_Pin_8 | GPIO_Pin_9;
-
-	pb89Init.GPIO_PuPd = GPIO_PuPd_NOPULL;
 
 	GPIO_PinAFConfig(GPIOB,GPIO_PinSource8, GPIO_AF_I2C1);
 	GPIO_PinAFConfig(GPIOB,GPIO_PinSource9, GPIO_AF_I2C1);
@@ -156,18 +174,13 @@ void myI2C_Init(void)
 	GPIO_Init(GPIOB,&pb89Init);
 
 	//I pin sono pronti per I2C
-	myDelay_ms(200);
+
 	//Inizializzazione I2C
 	I2C_StructInit(&i2c1Init);
 
 	I2C_Init(I2C1,&i2c1Init);
 
 	I2C_Cmd(I2C1, ENABLE);
-
-	I2C_Cmd(I2C1, DISABLE);
-	I2C_SoftwareResetCmd(I2C1,ENABLE);
-	myDelay_ms(10);
-	I2C_SoftwareResetCmd(I2C1,DISABLE);
 
 }
 /*
@@ -183,7 +196,7 @@ void myI2C_Init(void)
 uint8_t myI2C_ReadReg(uint8_t BaseAddr,uint8_t Reg)
 {
 	uint8_t temp;
-	myI2C_MultipleReadReg(BaseAddr,Reg,&temp,0,0);
+	myI2C_MultipleReadReg(BaseAddr,Reg,&temp,1,0);
 	return temp;
 }
 
@@ -410,7 +423,7 @@ void myMEMSBoard_Init(void)
 {
 	myI2C_Init(); //Bus I2C
 // Da implementare...
-//	myAccGyr_Init(); //Al momento solo accelerometro
+	myAccGyr_Init(); //Al momento solo accelerometro
 //	myMag_Init(); //Magnetometro
 
 	myBar_Init(); //Barometro
@@ -510,7 +523,14 @@ void myBar_Init(void)
 
 float myBar_Get(void)
 {
-	s32 temp = myI2C_ReadReg(0xBA,0x2A) << 16 | myI2C_ReadReg(0xBA,0x29) << 8 | myI2C_ReadReg(0xBA,0x28);
+	s32 temp = 0;
+	//Per riempire temp occorrono due byte
+	//In little endian [0x00]L->[0x01]H...
+	//&reg dà l'indirizzo alla parte bassa del registro
+	//I registri I2C seguono la stessa regola: indirizzi successivi contengono byte più alti
+	//Il casting è necessario ma puramente formale (sempre indirizzi sono)
+	//[0x28]PRESS_XL->[0x29]PRESS_L->[0x2A]PRESS_H
+	myI2C_MultipleReadReg(0xBA,0x28,(uint8_t *) &temp,3,1);
 	return (float) temp / 4096;
 
 }
@@ -540,7 +560,7 @@ void myHumTemp_Init(void)
 	myI2C_WriteReg(0xBE,0x20,0b10000001);
 
 	//Scarica la tabella
-	myI2C_MultipleReadReg(0xBE,0x30,table,15,1);
+	myI2C_MultipleReadReg(0xBE,0x30,table,16,1);
 
 	//Retta di interpolazione per la temperatura
 	T0_OUT = (s16)table[0xD] << 8 | (s16)table[0xC];
@@ -576,9 +596,14 @@ void myHumTemp_Init(void)
 
 float myTemp_Get(void)
 {
-	s16 temp;
-
-	temp = (s16)myI2C_ReadReg(0xBE,0x2B) << 8 | (s16)myI2C_ReadReg(0xBE,0x2A);
+	s16 temp = 0;
+	//Per riempire temp occorrono due byte
+	//In little endian [0x00]L->[0x01]H...
+	//&reg dà l'indirizzo alla parte bassa del registro
+	//I registri I2C seguono la stessa regola: indirizzi successivi contengono byte più alti
+	//Il casting è necessario ma puramente formale (sempre indirizzi sono)
+	//[0x2A]TEMP_L->[0x2B]TEMP_H
+	myI2C_MultipleReadReg(0xBE,0x2A,(uint8_t *) &temp,2,1);
 
 	return (m_T*temp + q_T);
 }
@@ -594,9 +619,14 @@ float myTemp_Get(void)
 
 float myHum_Get(void)
 {
-	s16 temp;
-
-	temp = (s16)myI2C_ReadReg(0xBE,0x29) << 8 | (s16)myI2C_ReadReg(0xBE,0x28);
+	s16 temp = 0;
+	//Per riempire temp occorrono due byte
+	//In little endian [0x00]L->[0x01]H...
+	//&reg dà l'indirizzo alla parte bassa del registro
+	//I registri I2C seguono la stessa regola: indirizzi successivi contengono byte più alti
+	//Il casting è necessario ma puramente formale (sempre indirizzi sono)
+	//[0x28]HUM_L->[0x29]HUM_H
+	myI2C_MultipleReadReg(0xBE,0x28,(uint8_t *) &temp,2,1);
 
 	return (m_H*temp + q_H);
 }
