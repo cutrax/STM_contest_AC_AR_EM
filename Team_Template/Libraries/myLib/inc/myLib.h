@@ -19,6 +19,8 @@
 void myI2C_Init(void); //Inizializza la comunicazione I2C
 uint8_t myI2C_ReadReg(uint8_t BaseAddr,uint8_t Reg); //Scrivi un registro I2C
 void myI2C_WriteReg(uint8_t BaseAddr, uint8_t Reg, uint8_t Data); //Leggi un registro I2C
+void myI2C_MultipleReadReg(uint8_t BaseAddr, uint8_t Reg, uint8_t *buf, uint8_t cnt, uint8_t autoInc);
+void myI2C_MultipleWriteReg(uint8_t BaseAddr, uint8_t Reg, uint8_t *buf, uint8_t cnt, uint8_t autoInc);
 
 //Comunicazione USART2 (USB Virtual COM Port)
 void myUSART2_Init(void); //Inizializza la porta seriale di dialogo col pc
