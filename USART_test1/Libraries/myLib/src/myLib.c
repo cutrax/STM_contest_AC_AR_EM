@@ -33,7 +33,7 @@ ADC_CommonInit(&ADC_CommonInitStructure);
 
 ADC_InitStructure.ADC_Resolution = ADC_Resolution_12b;
 ADC_InitStructure.ADC_ScanConvMode = DISABLE;
-ADC_InitStructure.ADC_ContinuousConvMode = ENABLE;
+//ADC_InitStructure.ADC_ContinuousConvMode = ENABLE;
 ADC_InitStructure.ADC_ExternalTrigConvEdge = ADC_ExternalTrigConvEdge_None;
 ADC_InitStructure.ADC_ExternalTrigConv = ADC_ExternalTrigConv_T1_CC1;
 ADC_InitStructure.ADC_DataAlign = ADC_DataAlign_Right;
