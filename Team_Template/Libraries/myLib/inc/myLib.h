@@ -52,10 +52,29 @@ void myDelay_ms(uint32_t del); //Delay approssimativo
  *********************************************************************************
  */
 
+//ACCELERAZIONE DI GRAVITA' (in m/s^2)
+#define GRAVITY_ACC                                 (9.8)
+
+/**FATTORE DI MOLTIPLICAZIONE PER OTTENERE L'ACCELERAZIONE IN G
+ *
+ */
+#define LINEAR_ACC_SENSE0                           (0.061)//Full Scale= (+/-)2g
+#define LINEAR_ACC_SENSE1                           (0.122)//Full Scale= (+/-)4g
+#define LINEAR_ACC_SENSE2                           (0.244)//Full Scale= (+/-)8g
+#define LINEAR_ACC_SENSE3                           (0.732)//Full Scale= (+/-)16g
+
+/**FATTORE DI MOLTIPLICAZIONE PER OTTENERE LA VELOCITA' ANGOLARE IN DPS
+ *
+ */
+#define ANGULAR_RATE_SENSE0                        (8.75)//Full Scale= (+/-)245dps
+#define ANGULAR_RATE_SENSE1                         (17.50)//Full Scale= (+/-)500dps
+#define ANGULAR_RATE_SENSE2                         (70)//Full Scale= 8+/-)2000dps
+
 /********************************************************************************
  ********************************DEFINIZIONE STRUTTURE***************************
  ********************************************************************************
  */
+
 typedef struct
 {
 	uint8_t MyGyrOutput_DataRate;
@@ -470,12 +489,12 @@ typedef struct
 void myGyrAcc_StructInit(MyGyrAcc_InitTypeDef *MyGyrAcc_InitStruct); //Inizializza struttura con valori di default
 void myGyrAcc_Init(MyGyrAcc_InitTypeDef *MyGyrAcc_InitStruct); //Inizializza i sensori
 
-int myAcc_Get_X(void); //Legge l'accelerazione lungo X
-int myAcc_Get_Y(void); //Legge l'accelerazione lungo Y
-int myAcc_Get_Z(void); //Legge l'accelerazione lungo Z
+float myAcc_Get_X(void); //Legge l'accelerazione lungo X
+float myAcc_Get_Y(void); //Legge l'accelerazione lungo Y
+float myAcc_Get_Z(void); //Legge l'accelerazione lungo Z
 
-int myGyr_Get_X(void); //Legge la velocità angolare lungo X
-int myGyr_Get_Y(void); //Legge la velocità angolare lungo Y
-int myGyr_Get_Z(void); //Legge la velocità angolare lungo Z
+float myGyr_Get_X(void); //Legge la velocità angolare lungo X
+float myGyr_Get_Y(void); //Legge la velocità angolare lungo Y
+float myGyr_Get_Z(void); //Legge la velocità angolare lungo Z
 
 #endif /* MYLIB_INC_MYLIB_H_ */

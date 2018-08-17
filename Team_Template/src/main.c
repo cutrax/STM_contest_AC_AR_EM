@@ -35,6 +35,7 @@ SOFTWARE.
 #include <math.h>
 #include "myLib.h"
 /* Private macro */
+
 /* Private variables */
 /* Private function prototypes */
 /* Private functions */
@@ -63,13 +64,13 @@ int main(void)
 	  printf("Pressione: %d hPa\r\n",(int)myBar_Get());
 	  printf("Temperatura: %d *C; Umidità: %d \r\n\n",(int)roundf(myTemp_Get()), (int) myHum_Get());
 
-	  printf("Accelerazione lungo Z: %d\r\n", myAcc_Get_Z());
-	  printf("Accelerazione lungo X: %d\r\n", myAcc_Get_X());
-	  printf("Accelerazione lungo Y: %d\r\n\n\n", myAcc_Get_Y());
+	  printf("Accelerazione lungo Z: %d m/s^2\r\n", (int)roundf(myAcc_Get_Z()));
+	  printf("Accelerazione lungo X: %d m/s^2\r\n", (int)roundf(myAcc_Get_X()));
+	  printf("Accelerazione lungo Y: %d m/s^2\r\n\n\n", (int)roundf(myAcc_Get_Y()));
 
-	  printf("Velocità angolare lungo Z: %d\r\n", myGyr_Get_Z());
-	  printf("Velocità angolare lungo X: %d\r\n", myGyr_Get_X());
-	  printf("velocità angolare lungo Y: %d\r\n\n\n", myGyr_Get_Y());
+	  printf("Velocità angolare lungo Z: %d dps\r\n", (int)roundf(myGyr_Get_Z()));
+	  printf("Velocità angolare lungo X: %d dps\r\n", (int)roundf(myGyr_Get_X()));
+	  printf("velocità angolare lungo Y: %d dps\r\n\n\n", (int)roundf(myGyr_Get_Y()));
 
 	  myDelay_ms(5000);
 
