@@ -18,6 +18,10 @@ static uint8_t H_T_newValues;
 static float P;
 static uint8_t P_newValues;
 
+//Variabili per AccGyr
+static float GYRO_X,GYRO_Y,GYRO_Z;
+static float ACC_X,ACC_Y,ACC_Z;
+static uint8_t GYR_ACC_newValues;
 
 /*
  * myUSART2_Init
@@ -425,68 +429,7 @@ myGyrAcc_StructInit(&MyGyrAcc_InitStructure);
 myGyrAcc_Init(&MyGyrAcc_InitStructure);
 }
 
-/*myAccGyr_Init()
- * Abilito accelerometro e giroscopio
- *
- *
- */
 
-/*void myAccGyr_Init(void)
-{
-	// "Accendo" il giroscopio
-	myI2C_WriteReg(0xD6, 0x10, 0x40);
-	//"Accendo" l'accelerometro
-	myI2C_WriteReg(0xD6, 0x20, 0x00);
-	//Abilito le interruzioni quando il dato è pronto
-	//myI2C_WriteReg(0xD4, 0x0C, 0x41);
-}*/
-
-/*myAcc_Get_X, myAcc_Get_Y, myAcc_Get_Z
- * Leggo l'accelerazione rispettivamente lungo
- * gli assi X, Y, e Z.
-*/
-
-float myAcc_Get_X(void)
-{
-	s16 acc_x = myI2C_ReadReg(0xD6, 0x29) << 8 | myI2C_ReadReg(0xD6, 0x28);
-	return (float) (((acc_x)*(LINEAR_ACC_SENSE0 ))/1000)*GRAVITY_ACC;
-}
-
-float myAcc_Get_Y(void)
-{
-	s16 acc_y = myI2C_ReadReg(0xD6, 0x2B) << 8 | myI2C_ReadReg(0xD6, 0x2A);
-	return (float) (((acc_y)*(LINEAR_ACC_SENSE0 ))/1000)*GRAVITY_ACC;
-}
-
-float myAcc_Get_Z(void)
-{
-	s16 acc_z = myI2C_ReadReg(0xD6, 0x2D) << 8 | myI2C_ReadReg(0xD6, 0x2C);
-	return (float) (((acc_z)*(LINEAR_ACC_SENSE0 ))/1000)*GRAVITY_ACC;
-}
-
-/*
- * myGyr_Get_X, myGyr_Get_Y, myGyr_Get_Z
- * Leggo i valori della velocità angolare lungo
- * X,Y, e Z.
- */
-//Al momento per semplicità definite come int
-float myGyr_Get_X(void)
-{
-	s16 gyr_x = myI2C_ReadReg(0xD6, 0x19) << 8 | myI2C_ReadReg(0xD6, 0x18);
-	return (float) (((gyr_x)*(ANGULAR_RATE_SENSE0))/1000);
-}
-
-float myGyr_Get_Y(void)
-{
-	s16 gyr_y = myI2C_ReadReg(0xD6, 0x1B) << 8 | myI2C_ReadReg(0xD6, 0x1A);
-	return (float) (((gyr_y)*(ANGULAR_RATE_SENSE0))/1000);
-}
-
-float myGyr_Get_Z(void)
-{
-	s16 gyr_z = myI2C_ReadReg(0xD6, 0x1D) << 8 | myI2C_ReadReg(0xD6, 0x1C);
-	return (float) (((gyr_z)*(ANGULAR_RATE_SENSE0))/1000);
-}
 
 
 /*
@@ -800,6 +743,12 @@ void myGyrAcc_StructInit(MyGyrAcc_InitTypeDef *MyGyrAcc_InitStruct)
  */
 void myGyrAcc_Init(MyGyrAcc_InitTypeDef *MyGyrAcc_InitStruct)
 {
+	GPIO_InitTypeDef pb5Init;
+
+	EXTI_InitTypeDef EXTIInit;
+
+	NVIC_InitTypeDef NVICInit;
+
 	uint8_t maskReg = 0x00;
 	uint8_t maskReg1 = 0x00;
 	//myI2C_Init();
@@ -810,14 +759,128 @@ void myGyrAcc_Init(MyGyrAcc_InitTypeDef *MyGyrAcc_InitStruct)
 	maskReg1 = (uint8_t) (MyGyrAcc_InitStruct->MyAccOutput_DataRate | MyGyrAcc_InitStruct->MyAccFull_Scale | \
 			              MyGyrAcc_InitStruct->MyAcc_Bandwith_Sel | MyGyrAcc_InitStruct->My_Acc_AntiAliasingBwSel);
 
+	//Abilita il pin DRDY(CN9->5->PB5) e le relative interruzioni
+	GPIO_StructInit(&pb5Init); //Default come input
+	pb5Init.GPIO_Pin = GPIO_Pin_5;
+	GPIO_Init(GPIOB,&pb5Init);
+
+	//Configura SYSCFG
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG,ENABLE);
+	SYSCFG_EXTILineConfig(EXTI_PortSourceGPIOB,EXTI_PinSource5);
+
+	//Configura EXTI
+	EXTIInit.EXTI_Line = EXTI_Line5;
+	EXTIInit.EXTI_LineCmd = ENABLE;
+	EXTIInit.EXTI_Mode = EXTI_Mode_Interrupt;
+	EXTIInit.EXTI_Trigger = EXTI_Trigger_Rising;
+	EXTI_Init(&EXTIInit);
+
+	//Configura NVIC
+	NVICInit.NVIC_IRQChannel = EXTI9_5_IRQn;
+	NVICInit.NVIC_IRQChannelPreemptionPriority = 0;
+	NVICInit.NVIC_IRQChannelSubPriority = 1;
+	NVICInit.NVIC_IRQChannelCmd = ENABLE;
+	NVIC_Init(&NVICInit);
+
 	myI2C_WriteReg(CHIP_ADDR, CTRL_REG1_G_ADDR , maskReg);
 	myI2C_WriteReg(CHIP_ADDR, CTRL_REG6_XL_ADDR, maskReg1);
+	//Interruzioni sia per Gyr che Acc
+	myI2C_WriteReg(CHIP_ADDR,INT_CTRL_ADDR, 0b00000011);
+
+	EXTI_GenerateSWInterrupt(EXTI_Line5);
 }
 
-//float myAcc_Calc(void)
-//{
+void EXTI9_5_IRQHandler(void)
+{
+	if(EXTI_GetITStatus(EXTI_Line5) == SET) //Acc Gyr
+	{
+		s16 gyro[3]; //X [0]->Y [1]->Z [2]
+		s16 acc[3]; //X [0]->Y [1]->Z [2]
 
-//}
+		//Leggi tutti gli assi dell'accelerometro
+		myI2C_MultipleReadReg(CHIP_ADDR,0x28,(uint8_t *)&acc,6,1);
+
+		//Leggi tutti gli assi del giroscopio
+		myI2C_MultipleReadReg(CHIP_ADDR,0x18,(uint8_t *)&gyro,6,1);
+
+		ACC_X = ((((float)acc[0])*LINEAR_ACC_SENSE0)/1000)*GRAVITY_ACC;
+		ACC_Y = ((((float)acc[1])*LINEAR_ACC_SENSE0)/1000)*GRAVITY_ACC;
+		ACC_Z = ((((float)acc[2])*LINEAR_ACC_SENSE0)/1000)*GRAVITY_ACC;
+
+		GYRO_X = ((((float)gyro[0])*ANGULAR_RATE_SENSE0)/1000);
+		GYRO_Y = ((((float)gyro[1])*ANGULAR_RATE_SENSE0)/1000);
+		GYRO_Z = ((((float)gyro[2])*ANGULAR_RATE_SENSE0)/1000);
+
+		GYR_ACC_newValues = SET;
+
+		EXTI_ClearITPendingBit(EXTI_Line5);
+	}
+}
+
+/*myAcc_Get_X, myAcc_Get_Y, myAcc_Get_Z
+ * Leggo l'accelerazione rispettivamente lungo
+ * gli assi X, Y, e Z.
+*/
+
+float myAcc_Get_X(void)
+{
+	GYR_ACC_newValues = RESET;
+	return ACC_X;
+}
+
+float myAcc_Get_Y(void)
+{
+	GYR_ACC_newValues = RESET;
+	return ACC_Y;
+}
+
+float myAcc_Get_Z(void)
+{
+	GYR_ACC_newValues = RESET;
+	return ACC_Z;
+}
+
+/*
+ * myGyr_Get_X, myGyr_Get_Y, myGyr_Get_Z
+ * Leggo i valori della velocità angolare lungo
+ * X,Y, e Z.
+ */
+
+float myGyr_Get_X(void)
+{
+	GYR_ACC_newValues = RESET;
+	return GYRO_X;
+}
+
+float myGyr_Get_Y(void)
+{
+	GYR_ACC_newValues = RESET;
+	return GYRO_Y;
+}
+
+float myGyr_Get_Z(void)
+{
+	GYR_ACC_newValues = RESET;
+	return GYRO_Z;
+}
+
+/*
+ *
+ */
+
+/*
+ * myGyrAcc_newData
+ * SET se vi sono nuovi dati non ancora letti dall'utente, RESET altrimenti
+ */
+
+uint8_t myGyrAcc_newData(void)
+{
+	return GYR_ACC_newValues;
+}
+
+/*
+ *
+ */
 
 /*
  * INIZIO FUNZIONI VARIE
@@ -837,6 +900,35 @@ void myDelay_ms(u32 del)
 /*
  *
  */
+
+/*
+ * my2decs
+ * Restituisce i primi due decimali di un float
+ */
+
+uint8_t my2decs(float var)
+{
+	return (int) ((var - floor(var)) * 100);
+}
+
+/*
+ *
+ */
+
+/*
+ * myInt
+ * Restituisce la parte intera sinistra
+ */
+
+uint16_t myInt(float var)
+{
+	return (int) floor(var);
+}
+
+/*
+ *
+ */
+
 
 /*
  * FINE FUNZIONI VARIE

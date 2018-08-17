@@ -12,6 +12,7 @@
 #include "stm32f4xx_gpio.h"
 #include "stm32f4xx_rcc.h"
 #include <stdio.h>
+#include <math.h>
 
 
 
@@ -45,8 +46,6 @@ void myHumTemp_Init(void); //Inizializza il sensore
 float myHumTemp_Temp_Get(void); //Leggi la temperatura
 float myHumTemp_Hum_Get(void); //Leggi l'umidità relativa
 uint8_t myHumTemp_newData(void); //SET se vi sono nuovi dati non ancora letti
-
-void myDelay_ms(uint32_t del); //Delay approssimativo
 
 /*********************************************************************************
  ******************************ACCELEROMETRO E GIROSCOPIO*************************
@@ -499,4 +498,15 @@ float myGyr_Get_X(void); //Legge la velocità angolare lungo X
 float myGyr_Get_Y(void); //Legge la velocità angolare lungo Y
 float myGyr_Get_Z(void); //Legge la velocità angolare lungo Z
 
+uint8_t myGyrAcc_newData(void); //SET se vi sono nuovi dati non ancora letti
+
+/*********************************************************************************
+ ******************************FINE ACCELEROMETRO E GIROSCOPIO********************
+ ***************************************LSM6DS0***********************************
+ *********************************************************************************
+ */
+
+void myDelay_ms(uint32_t del); //Delay approssimativo
+uint16_t myInt(float var); //Parte intera sinistra
+uint8_t my2decs(float var); //Due decimali
 #endif /* MYLIB_INC_MYLIB_H_ */
