@@ -49,8 +49,13 @@ SOFTWARE.
 
 int main(void)
 {
-  myUSART2_Init();
-  myMEMSBoard_Init();
+
+	myUSART2_Init();
+
+   myMEMSBoard_Init();
+
+
+
   /* Infinite loop */
   while (1)
   {

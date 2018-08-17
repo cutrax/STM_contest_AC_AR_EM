@@ -291,15 +291,17 @@ void myI2C_WriteReg(uint8_t BaseAddr,uint8_t Reg, uint8_t Data)
 
 void myMEMSBoard_Init(void)
 {
-	myI2C_Init(); //Bus I2C
-// Da implementare...
-	myAccGyr_Init(); //Al momento solo accelerometro
+
+MyGyrAcc_InitTypeDef MyGyrAcc_InitStructure;
+
+myI2C_Init(); //Bus I2C
 //	myMag_Init(); //Magnetometro
+myBar_Init(); //Barometro
+myHumTemp_Init(); //Umidità e Temperatura
 
-	myBar_Init(); //Barometro
-	myHumTemp_Init(); //Umidità e Temperatura
-
-
+//Inizializzo accelerometro e giroscopio con parametri di default
+myGyrAcc_StructInit(&MyGyrAcc_InitStructure);
+myGyrAcc_Init(&MyGyrAcc_InitStructure);
 }
 
 /*myAccGyr_Init()
@@ -308,15 +310,15 @@ void myMEMSBoard_Init(void)
  *
  */
 
-void myAccGyr_Init(void)
+/*void myAccGyr_Init(void)
 {
 	// "Accendo" il giroscopio
 	myI2C_WriteReg(0xD6, 0x10, 0x40);
 	//"Accendo" l'accelerometro
-	myI2C_WriteReg(0xD6, 0x20, 0x43);
+	myI2C_WriteReg(0xD6, 0x20, 0x00);
 	//Abilito le interruzioni quando il dato è pronto
 	//myI2C_WriteReg(0xD4, 0x0C, 0x41);
-}
+}*/
 
 /*myAcc_Get_X, myAcc_Get_Y, myAcc_Get_Z
  * Leggo l'accelerazione rispettivamente lungo
@@ -485,6 +487,70 @@ float myHum_Get(void)
 /*
  * FINE FUNZIONI MEMS IKS01A1
  */
+
+
+/*FUNZIONI MEMS LSM6DS0 ACCELEROMETRO E GIROSCOPIO
+ *
+ */
+
+/**myGyrAcc_StructInit: INIZIALIZZAZIONE STRUTTURA CON VALORI DI DEFAULT
+ * I valori di default (impostati da Emanuele) sono i seguenti:
+ *
+ * -OUTPUT DATA RATE GIROSCOPIO: 59.5Hz;
+ *
+ * -SCALA GIROSCOPIO = 245dps;
+ *
+ * -BANDA: LA BANDA (BITS BW_G[1:0]) Dipende dall'ODR selezionato quando
+ * accelerometro e giroscopio sono entrambi abilitati. Avendo scelto ODR pari a
+ * 59.5Hz, settando i bit BW_G[1:0] = 00, si ottiene una frequenza di taglio pari a
+ * 16Hz. Per maggiori approfondimenti consultare la tabella nel manuale del sensore a pag.40;
+ *
+ * -OUTPUT DATA RATE ACCELEROMETRO: l'ho impostato in modo da abilitare sia accelerometro che giroscopio
+ * (istruzioni seguite passo passo dal manuale), cioè ODR = 000 (Power Down). In questo modo l'accelerometro
+ * è abilitato allo stesso ODR del giroscopio;
+ *
+ * -SCALA ACCELEROMETRO: (+/-)2g;
+ *
+ * -BANDA ACCELEROMETRO: Bandwidth selection. Default value: 0
+(0: bandwidth determined by ODR selection:
+- BW = 408 Hz when ODR = 952 Hz, 50 Hz, 10 Hz;
+- BW = 211 Hz when ODR = 476 Hz;
+- BW = 105 Hz when ODR = 238 Hz;
+- BW = 50 Hz when ODR = 119 Hz;
+1: bandwidth selected according to BW_XL [1:0] selection);
+ *
+ * -BANDA FILTRO ANTI-ALIASING: 408Hz;
+ */
+void myGyrAcc_StructInit(MyGyrAcc_InitTypeDef *MyGyrAcc_InitStruct)
+{
+	      MyGyrAcc_InitStruct->MyGyrOutput_DataRate = GYR_ODR_3;
+	 	  MyGyrAcc_InitStruct->MyGyrFull_Scale = GYR_FULLSCALE_245;
+	 	  MyGyrAcc_InitStruct->MyGyrBandwith_Sel = BANDWITH_00;
+	 	  MyGyrAcc_InitStruct->MyAccOutput_DataRate = ACC_ODR_1;
+	 	  MyGyrAcc_InitStruct->MyAccFull_Scale = ACC_FULLSCALE_00;
+	 	  MyGyrAcc_InitStruct->MyAcc_Bandwith_Sel = BW_SCAL_ODR_0;
+	 	  MyGyrAcc_InitStruct->My_Acc_AntiAliasingBwSel = BW_XL_00;
+}
+
+/**myGyrAcc_Init:
+ * scrive negli opportuni registri di controllo del chip (in questo caso
+ * CTRL_REG1_G, CTRL_REG6_XL), i valori dichiarati nella struttura.
+ */
+void myGyrAcc_Init(MyGyrAcc_InitTypeDef *MyGyrAcc_InitStruct)
+{
+	uint8_t maskReg = 0x00;
+	uint8_t maskReg1 = 0x00;
+	//myI2C_Init();
+
+	maskReg = (uint8_t) (MyGyrAcc_InitStruct->MyGyrOutput_DataRate | MyGyrAcc_InitStruct->MyGyrFull_Scale | \
+	                     MyGyrAcc_InitStruct->MyGyrBandwith_Sel);
+
+	maskReg1 = (uint8_t) (MyGyrAcc_InitStruct->MyAccOutput_DataRate | MyGyrAcc_InitStruct->MyAccFull_Scale | \
+			              MyGyrAcc_InitStruct->MyAcc_Bandwith_Sel | MyGyrAcc_InitStruct->My_Acc_AntiAliasingBwSel);
+
+	myI2C_WriteReg(CHIP_ADDR, CTRL_REG1_G_ADDR , maskReg);
+	myI2C_WriteReg(CHIP_ADDR, CTRL_REG6_XL_ADDR, maskReg1);
+}
 
 /*
  * INIZIO FUNZIONI VARIE
