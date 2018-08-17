@@ -446,22 +446,22 @@ myGyrAcc_Init(&MyGyrAcc_InitStructure);
  * gli assi X, Y, e Z.
 */
 
-int myAcc_Get_X(void)
+float myAcc_Get_X(void)
 {
-	u16 acc_x = myI2C_ReadReg(0xD6, 0x29) << 8 | myI2C_ReadReg(0xD6, 0x28);
-	return acc_x;
+	s16 acc_x = myI2C_ReadReg(0xD6, 0x29) << 8 | myI2C_ReadReg(0xD6, 0x28);
+	return (float) (((acc_x)*(LINEAR_ACC_SENSE0 ))/1000)*GRAVITY_ACC;
 }
 
-int myAcc_Get_Y(void)
+float myAcc_Get_Y(void)
 {
-	u16 acc_y = myI2C_ReadReg(0xD6, 0x2B) << 8 | myI2C_ReadReg(0xD6, 0x2A);
-	return acc_y;
+	s16 acc_y = myI2C_ReadReg(0xD6, 0x2B) << 8 | myI2C_ReadReg(0xD6, 0x2A);
+	return (float) (((acc_y)*(LINEAR_ACC_SENSE0 ))/1000)*GRAVITY_ACC;
 }
 
-int myAcc_Get_Z(void)
+float myAcc_Get_Z(void)
 {
-	u16 acc_z = myI2C_ReadReg(0xD6, 0x2D) << 8 | myI2C_ReadReg(0xD6, 0x2C);
-	return acc_z;
+	s16 acc_z = myI2C_ReadReg(0xD6, 0x2D) << 8 | myI2C_ReadReg(0xD6, 0x2C);
+	return (float) (((acc_z)*(LINEAR_ACC_SENSE0 ))/1000)*GRAVITY_ACC;
 }
 
 /*
@@ -470,22 +470,22 @@ int myAcc_Get_Z(void)
  * X,Y, e Z.
  */
 //Al momento per semplicità definite come int
-int myGyr_Get_X(void)
+float myGyr_Get_X(void)
 {
-	u16 gyr_x = myI2C_ReadReg(0xD6, 0x19) << 8 | myI2C_ReadReg(0xD6, 0x18);
-	return gyr_x;
+	s16 gyr_x = myI2C_ReadReg(0xD6, 0x19) << 8 | myI2C_ReadReg(0xD6, 0x18);
+	return (float) (((gyr_x)*(ANGULAR_RATE_SENSE0))/1000);
 }
 
-int myGyr_Get_Y(void)
+float myGyr_Get_Y(void)
 {
-	u16 gyr_y = myI2C_ReadReg(0xD6, 0x1B) << 8 | myI2C_ReadReg(0xD6, 0x1A);
-	return gyr_y;
+	s16 gyr_y = myI2C_ReadReg(0xD6, 0x1B) << 8 | myI2C_ReadReg(0xD6, 0x1A);
+	return (float) (((gyr_y)*(ANGULAR_RATE_SENSE0))/1000);
 }
 
-int myGyr_Get_Z(void)
+float myGyr_Get_Z(void)
 {
-	u16 gyr_z = myI2C_ReadReg(0xD6, 0x1D) << 8 | myI2C_ReadReg(0xD6, 0x1C);
-	return gyr_z;
+	s16 gyr_z = myI2C_ReadReg(0xD6, 0x1D) << 8 | myI2C_ReadReg(0xD6, 0x1C);
+	return (float) (((gyr_z)*(ANGULAR_RATE_SENSE0))/1000);
 }
 
 
@@ -813,6 +813,11 @@ void myGyrAcc_Init(MyGyrAcc_InitTypeDef *MyGyrAcc_InitStruct)
 	myI2C_WriteReg(CHIP_ADDR, CTRL_REG1_G_ADDR , maskReg);
 	myI2C_WriteReg(CHIP_ADDR, CTRL_REG6_XL_ADDR, maskReg1);
 }
+
+//float myAcc_Calc(void)
+//{
+
+//}
 
 /*
  * INIZIO FUNZIONI VARIE
