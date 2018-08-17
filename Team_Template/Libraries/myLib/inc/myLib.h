@@ -38,11 +38,13 @@ void myMag_Init(void); //Inizializza il sensore
 //Sensore di pressione LPS25HB*
 void myBar_Init(void); //Inizializza il sensore
 float myBar_Get(void); //Leggi la pressione
+uint8_t myBar_newData(void); //SET se vi sono nuovi dati non ancora letti
 
 //Sensore HTS221
 void myHumTemp_Init(void); //Inizializza il sensore
-float myTemp_Get(void); //Leggi la temperatura
-float myHum_Get(void); //Leggi l'umidità relativa
+float myHumTemp_Temp_Get(void); //Leggi la temperatura
+float myHumTemp_Hum_Get(void); //Leggi l'umidità relativa
+uint8_t myHumTemp_newData(void); //SET se vi sono nuovi dati non ancora letti
 
 void myDelay_ms(uint32_t del); //Delay approssimativo
 

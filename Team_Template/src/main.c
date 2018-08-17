@@ -51,27 +51,33 @@ int main(void)
 {
 
 	myUSART2_Init();
-
-   myMEMSBoard_Init();
+	myMEMSBoard_Init();
 
 
 
   /* Infinite loop */
   while (1)
   {
+	  if(myBar_newData())
+	  {
+		  printf("Pressione: %d hPa\r\n",(int)myBar_Get());
+	  }
 
-	  printf("Pressione: %d hPa\r\n",(int)myBar_Get());
-	  printf("Temperatura: %d *C; Umidità: %d \r\n\n",(int)roundf(myTemp_Get()), (int) myHum_Get());
+	  if(myHumTemp_newData())
+	  {
+		  printf("Temperatura: %d *C; Umidità: %d \r\n\n",(int)roundf(myHumTemp_Temp_Get()), (int) myHumTemp_Hum_Get());
 
-	  printf("Accelerazione lungo Z: %d\r\n", myAcc_Get_Z());
-	  printf("Accelerazione lungo X: %d\r\n", myAcc_Get_X());
-	  printf("Accelerazione lungo Y: %d\r\n\n\n", myAcc_Get_Y());
+	  }
 
-	  printf("Velocità angolare lungo Z: %d\r\n", myGyr_Get_Z());
-	  printf("Velocità angolare lungo X: %d\r\n", myGyr_Get_X());
-	  printf("velocità angolare lungo Y: %d\r\n\n\n", myGyr_Get_Y());
+//	  printf("Accelerazione lungo Z: %d\r\n", myAcc_Get_Z());
+//	  printf("Accelerazione lungo X: %d\r\n", myAcc_Get_X());
+//	  printf("Accelerazione lungo Y: %d\r\n\n\n", myAcc_Get_Y());
+//
+//	  printf("Velocità angolare lungo Z: %d\r\n", myGyr_Get_Z());
+//	  printf("Velocità angolare lungo X: %d\r\n", myGyr_Get_X());
+//	  printf("velocità angolare lungo Y: %d\r\n\n\n", myGyr_Get_Y());
 
-	  myDelay_ms(5000);
+//	  myDelay_ms(5000);
 
   }
 }

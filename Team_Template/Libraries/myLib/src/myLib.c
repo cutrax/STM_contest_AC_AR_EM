@@ -11,6 +11,12 @@
 
 //Variabili per HumTemp
 static float m_T,m_H,q_T,q_H;
+static float T,H;
+static uint8_t H_T_newValues;
+
+//Variabili per Bar
+static float P;
+static uint8_t P_newValues;
 
 
 /*
@@ -139,6 +145,10 @@ void myI2C_Init(void)
 	RCC_APB1PeriphClockCmd(RCC_APB1Periph_I2C1, ENABLE); //Abilita il clock a I2C1
 
 	//Configura PB8 (SCL) e PB9 (SDA)
+
+	/*
+	 * Cicla i pin SCL e SDA per correggere un bug sulla I2C (ST)
+	 */
 	GPIO_StructInit(&pb89Init);
 	pb89Init.GPIO_Mode = GPIO_Mode_OUT;
 	pb89Init.GPIO_OType = GPIO_OType_OD;
@@ -163,6 +173,9 @@ void myI2C_Init(void)
 	GPIO_WriteBit(GPIOB,GPIO_Pin_9,1); //SDA high
 	while(GPIO_ReadInputDataBit(GPIOB,GPIO_Pin_9) != 1);
 
+	/*
+	 * INIZIO configurazione standard
+	 */
 	//SCL e SDA devono essere open drain con pull-up, modo alternate
 	pb89Init.GPIO_Mode = GPIO_Mode_AF;
 
@@ -214,6 +227,8 @@ uint8_t myI2C_ReadReg(uint8_t BaseAddr,uint8_t Reg)
 
 void myI2C_MultipleReadReg(uint8_t BaseAddr, uint8_t Reg, uint8_t *buf, uint8_t cnt, uint8_t autoInc)
 {
+	__disable_irq();
+
 	I2C_GenerateSTART(I2C1, ENABLE); //Fai partire lo START
 	//Attendi che lo SB vada ad uno, quando il while se ne accorgerà, avrà letto ancora
 	//una volta lo SR1, e EV5 è soddisfatto
@@ -295,6 +310,8 @@ void myI2C_MultipleReadReg(uint8_t BaseAddr, uint8_t Reg, uint8_t *buf, uint8_t 
 	//Non disperdere l'ultimo byte letto, attendi la sua lettura
 	while(I2C_GetFlagStatus(I2C1,I2C_FLAG_RXNE) != SET);
 	*buf = I2C_ReceiveData(I2C1); //E' già incrementato nel while, oppure è una single read
+
+	__enable_irq();
 }
 
 /*
@@ -309,36 +326,7 @@ void myI2C_MultipleReadReg(uint8_t BaseAddr, uint8_t Reg, uint8_t *buf, uint8_t 
 
 void myI2C_WriteReg(uint8_t BaseAddr,uint8_t Reg, uint8_t Data)
 {
-	I2C_GenerateSTART(I2C1, ENABLE); //Fai partire lo START
-	//Attendi che lo SB vada ad uno, quando il while se ne accorgerà, avrà letto ancora
-	//una volta lo SR1, e EV5 è soddisfatto
-	while(I2C_GetFlagStatus(I2C1,I2C_FLAG_SB) != SET);
-
-	//Invia l'indirizzo della periferica in write
-	I2C_Send7bitAddress(I2C1,BaseAddr,I2C_Direction_Transmitter);
-	//Aspetta che l'indirizzo sia trasmesso  e che la periferica abbia dato ACK
-	while(I2C_GetFlagStatus(I2C1,I2C_FLAG_ADDR) !=SET);
-	//Read SR1 inutile, già il while lo ha letto dopo l'evento
-	//Leggi SR2
-	I2C_ReadRegister(I2C1,I2C_Register_SR2);
-	//EV6 onorato
-
-	//Manda come primo byte l'indirizzo del registro
-	I2C_SendData(I2C1,Reg);
-	//EV8_1 onorato
-
-	//Aspetto il momento giusto per caricare il secondo byte in DR (TXE set)
-	while(I2C_GetFlagStatus(I2C1,I2C_FLAG_TXE)!=SET);
-	I2C_SendData(I2C1,Data);
-	//EV8 onorato
-
-	//L'interfaccia, mentre il secondo byte veniva scritto, non è stata programmata
-	//per un ulteriore byte, dunque è l'ultimo.
-	//In queste condizioni BTF indica l'ACK dello slave dell'ultimo byte
-	while(I2C_GetFlagStatus(I2C1,I2C_FLAG_BTF) != SET);
-	//Ora si programma lo STOP
-	I2C_GenerateSTOP(I2C1,ENABLE);
-
+	myI2C_MultipleWriteReg(BaseAddr,Reg,&Data,1,0);
 }
 
 /*
@@ -355,6 +343,8 @@ void myI2C_WriteReg(uint8_t BaseAddr,uint8_t Reg, uint8_t Data)
 
 void myI2C_MultipleWriteReg(uint8_t BaseAddr, uint8_t Reg, uint8_t *buf, uint8_t cnt, uint8_t autoInc)
 {
+	__disable_irq();
+
 	//Se cnt è nullo, esci
 	if (cnt==0) return;
 
@@ -399,6 +389,7 @@ void myI2C_MultipleWriteReg(uint8_t BaseAddr, uint8_t Reg, uint8_t *buf, uint8_t
 	//Ora si programma lo STOP
 	I2C_GenerateSTOP(I2C1,ENABLE);
 
+	__enable_irq();
 }
 
 /*
@@ -507,9 +498,60 @@ int myGyr_Get_Z(void)
 
 void myBar_Init(void)
 {
+	GPIO_InitTypeDef pb4Init;
+
+	EXTI_InitTypeDef EXTIInit;
+
+	NVIC_InitTypeDef NVICInit;
+
+	//Configuro PB4 per DRDY
+	GPIO_StructInit(&pb4Init);
+	pb4Init.GPIO_Pin = GPIO_Pin_4;
+	GPIO_Init(GPIOB,&pb4Init);
+
+	//Configuro SYSCFG
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG, ENABLE);
+	SYSCFG_EXTILineConfig(EXTI_PortSourceGPIOB,EXTI_PinSource4);
+
+	//Configuro ExTI
+	EXTIInit.EXTI_Line = EXTI_Line4;
+	EXTIInit.EXTI_LineCmd = ENABLE;
+	EXTIInit.EXTI_Mode = EXTI_Mode_Interrupt;
+	EXTIInit.EXTI_Trigger = EXTI_Trigger_Rising;
+	EXTI_Init(&EXTIInit);
+
+	//Configuro NVIC
+	NVICInit.NVIC_IRQChannel = EXTI4_IRQn;
+	NVICInit.NVIC_IRQChannelCmd = ENABLE;
+	NVICInit.NVIC_IRQChannelPreemptionPriority = 0;
+	NVICInit.NVIC_IRQChannelSubPriority = 1;
+	NVIC_Init(&NVICInit);
+
 	//Continuous mode, 1 Hz, PowerUP
 	myI2C_WriteReg(0xBA,0x20,0b10010000);
 
+	//Data Ready on DRDY (CTRL_REG4)
+	myI2C_WriteReg(0xBA,0x23,0b00000001);
+
+	EXTI_GenerateSWInterrupt(EXTI_Line4);
+
+}
+
+void EXTI4_IRQHandler(void)
+{
+	if(EXTI_GetITStatus(EXTI_Line4) == SET)
+	{
+		s32 var=0;
+
+		//Scarica 3 byte in un colpo solo XL 0x28->L 0x29->H 0x2A
+		myI2C_MultipleReadReg(0xBA,0x28,(uint8_t *) &var,3,1);
+
+		P = (float) var / 4096; //hPa
+		P_newValues = SET;
+
+		//ISR completata, pulisci il flag
+		EXTI_ClearITPendingBit(EXTI_Line4);
+	}
 }
 
 /*
@@ -525,16 +567,23 @@ void myBar_Init(void)
 
 float myBar_Get(void)
 {
-	s32 temp = 0;
-	//Per riempire temp occorrono due byte
-	//In little endian [0x00]L->[0x01]H...
-	//&reg dà l'indirizzo alla parte bassa del registro
-	//I registri I2C seguono la stessa regola: indirizzi successivi contengono byte più alti
-	//Il casting è necessario ma puramente formale (sempre indirizzi sono)
-	//[0x28]PRESS_XL->[0x29]PRESS_L->[0x2A]PRESS_H
-	myI2C_MultipleReadReg(0xBA,0x28,(uint8_t *) &temp,3,1);
-	return (float) temp / 4096;
+	P_newValues = RESET;
+	return P;
 
+}
+
+/*
+ *
+ */
+
+/*
+ * myBar_newData
+ * SET se vi sono nuovi dati non ancora letti dall'utente, RESET altrimenti
+ */
+
+uint8_t myBar_newData(void)
+{
+	return P_newValues;
 }
 
 /*
@@ -551,15 +600,17 @@ float myBar_Get(void)
 
 void myHumTemp_Init(void)
 {
+	EXTI_InitTypeDef EXTIInit;
+
+	NVIC_InitTypeDef NVICInit;
+
+	GPIO_InitTypeDef pb10Init;
+
 	s16 T0_OUT,T1_OUT,H0_OUT,H1_OUT;
 	uint16_t T0_deg,T1_deg;
 	uint8_t H0_r,H1_r;
 	uint8_t T1_T0_MSB;
-
 	uint8_t table[16];
-
-	//Continuous mode, 1Hz
-	myI2C_WriteReg(0xBE,0x20,0b10000001);
 
 	//Scarica la tabella
 	myI2C_MultipleReadReg(0xBE,0x30,table,16,1);
@@ -585,6 +636,62 @@ void myHumTemp_Init(void)
 
 	m_H = (float) (H1_r - H0_r) / (float)(H1_OUT - H0_OUT) /2;
 	q_H = (H0_r - m_H*H0_OUT) /2;
+
+	//Calibrazione terminata
+
+	//Abilita il pin DRDY(CN9->7->PB10) e relative le interruzioni
+	GPIO_StructInit(&pb10Init); //Default come input
+	pb10Init.GPIO_Pin = GPIO_Pin_10;
+	GPIO_Init(GPIOB,&pb10Init);
+
+	//Configura SYSCFG
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG,ENABLE);
+	SYSCFG_EXTILineConfig(EXTI_PortSourceGPIOB,EXTI_PinSource10);
+
+	//Configura EXTI
+	EXTIInit.EXTI_Line = EXTI_Line10;
+	EXTIInit.EXTI_LineCmd = ENABLE;
+	EXTIInit.EXTI_Mode = EXTI_Mode_Interrupt;
+	EXTIInit.EXTI_Trigger = EXTI_Trigger_Rising;
+	EXTI_Init(&EXTIInit);
+
+	//Configura NVIC
+	NVICInit.NVIC_IRQChannel = EXTI15_10_IRQn;
+	NVICInit.NVIC_IRQChannelPreemptionPriority = 0;
+	NVICInit.NVIC_IRQChannelSubPriority = 1;
+	NVICInit.NVIC_IRQChannelCmd = ENABLE;
+	NVIC_Init(&NVICInit);
+
+	//Fai partire il sensore
+
+	//Continuous mode, 1Hz
+	myI2C_WriteReg(0xBE,0x20,0b10000001);
+
+	//Abilita DRDY
+	myI2C_WriteReg(0xBE,0x22,0b00000100);
+
+	EXTI_GenerateSWInterrupt(EXTI_Line10);
+
+}
+
+
+void EXTI15_10_IRQHandler()
+{
+	if(EXTI_GetITStatus(EXTI_Line10) == SET) //ISR per HTS221
+	{
+		s16 var[2]; //Alloca 4 byte, ovvero due word per memorizzare in un colpo solo
+		//var[0] HUM REGS 0x28->0x29
+		//var[1] TEMP REGS 0x2A->0x2B
+		//Leggi entrambe le grandezze in un colpo solo
+		myI2C_MultipleReadReg(0xBE,0x28,(uint8_t *) &var,4,1);
+		T = (m_T*var[1]) + q_T;
+		H = (m_H*var[0]) + q_H;
+		H_T_newValues = SET;
+
+		//ISR completata, pulisci il flag
+		EXTI_ClearITPendingBit(EXTI_Line10);
+	}
+
 }
 
 /*
@@ -596,18 +703,12 @@ void myHumTemp_Init(void)
  * Ricava la temperatura mediante interpolazione dal sensore
  */
 
-float myTemp_Get(void)
+float myHumTemp_Temp_Get(void)
 {
-	s16 temp = 0;
-	//Per riempire temp occorrono due byte
-	//In little endian [0x00]L->[0x01]H...
-	//&reg dà l'indirizzo alla parte bassa del registro
-	//I registri I2C seguono la stessa regola: indirizzi successivi contengono byte più alti
-	//Il casting è necessario ma puramente formale (sempre indirizzi sono)
-	//[0x2A]TEMP_L->[0x2B]TEMP_H
-	myI2C_MultipleReadReg(0xBE,0x2A,(uint8_t *) &temp,2,1);
 
-	return (m_T*temp + q_T);
+	H_T_newValues = RESET;
+
+	return T;
 }
 
 /*
@@ -619,18 +720,26 @@ float myTemp_Get(void)
  * Ricava l' umidità percentuale mediante interpolazione dal sensore
  */
 
-float myHum_Get(void)
+float myHumTemp_Hum_Get(void)
 {
-	s16 temp = 0;
-	//Per riempire temp occorrono due byte
-	//In little endian [0x00]L->[0x01]H...
-	//&reg dà l'indirizzo alla parte bassa del registro
-	//I registri I2C seguono la stessa regola: indirizzi successivi contengono byte più alti
-	//Il casting è necessario ma puramente formale (sempre indirizzi sono)
-	//[0x28]HUM_L->[0x29]HUM_H
-	myI2C_MultipleReadReg(0xBE,0x28,(uint8_t *) &temp,2,1);
 
-	return (m_H*temp + q_H);
+	H_T_newValues = RESET;
+
+	return H;
+}
+
+/*
+ *
+ */
+
+/*
+ * myHumTemp_newData
+ * SET se vi sono nuovi dati non ancora letti dall'utente, RESET altrimenti
+ */
+
+uint8_t myHumTemp_newData(void)
+{
+	return H_T_newValues;
 }
 
 /*
