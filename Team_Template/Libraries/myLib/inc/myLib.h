@@ -509,4 +509,17 @@ uint8_t myGyrAcc_newData(void); //SET se vi sono nuovi dati non ancora letti
 void myDelay_ms(uint32_t del); //Delay approssimativo
 uint16_t myInt(float var); //Parte intera sinistra
 uint8_t my2decs(float var); //Due decimali
+
+/*********************************************************************************
+ *****************************ELABORAZIONE DEI SEGNALI****************************
+ *********************************************************************************
+ */
+
+#define N                      3     //Dimensione matrici (3 righe, 3 colonne)
+
+void matriceDiRotazione_Init(float theta, float psi); //Inizializzazione matrice di rotazione
+void debugMatrice(float matrix[N][N]);
+
+
+
 #endif /* MYLIB_INC_MYLIB_H_ */

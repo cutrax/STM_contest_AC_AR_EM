@@ -956,6 +956,49 @@ int _write(int file,char *ptr, int len)
  }
 return len;
 }
+
 /*
+ * FUNZIONI DI GESTIONE ELABORAZIONE DEI SEGNALI IN INGRESSO
  *
  */
+
+/*
+ * matricediRotazione_Init
+ * Inizializzazione matrice di rotazione,
+ * i parametri theta e psi corrispondono ad alpha e beta rispettivamente.
+ */
+
+void matriceDiRotazione_Init(float theta, float psi){
+
+	 float matrice[N][N] = { {cos(psi), 0, sin(psi)},
+
+	                        {sin(theta)*sin(psi), cos(theta), -sin(theta)*cos(psi)},
+
+							{-cos(theta)*sin(psi), sin(theta), cos(theta)*cos(psi)} };
+
+	/*matrice[0][0] = cos(psi); //Elementi prima riga
+	matrice[0][1] = 0;
+	matrice[0][2] = sin(psi);
+
+	matrice[1][0] = sin(theta)*sin(psi);          //Elementi seconda riga
+	matrice[1][1] = cos(theta);
+	matrice[1][2] = -sin(theta)*cos(psi);
+
+	matrice[2][0] = -cos(theta)*sin(psi);//Elementi terza riga
+	matrice[2][1] = sin(theta);
+	matrice[2][2] = cos(theta)*cos(psi);*/
+}
+
+void debugMatrice(float matrix[N][N]){
+
+	int i,j;
+	for(i = 0; i < N; i++)
+		{
+			for(j = 0; j < N; j++)
+			{
+				printf("%4d.%d", myInt(matrix[i][j]), my2decs(matrix[i][j]));
+			}
+		}
+}
+
+

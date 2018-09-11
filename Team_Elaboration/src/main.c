@@ -42,11 +42,11 @@ typedef enum {ATTESA = 0, SWAP, FFT} states_t;
 
 
 
-s16 dataBuffer0_X[n_C], dataBuffer0_Y[n_C], dataBuffer0_Z[n_C];
-s16 dataBuffer1_X[n_C], dataBuffer1_Y[n_C], dataBuffer1_Z[n_C];
+float dataBuffer0_X[n_C], dataBuffer0_Y[n_C], dataBuffer0_Z[n_C];
+float dataBuffer1_X[n_C], dataBuffer1_Y[n_C], dataBuffer1_Z[n_C];
 
-s16 *workBuf_X, *workBuf_Y, *workBuf_Z;
-extern s16 *storeBuf_X, *storeBuf_Y, *storeBuf_Z; //Da condividere con la ISR
+float *workBuf_X, *workBuf_Y, *workBuf_Z;
+extern float *storeBuf_X, *storeBuf_Y, *storeBuf_Z; //Da condividere con la ISR
 extern u16 cont; //Da condividere con la ISR
 
 /* Private function prototypes */
@@ -97,7 +97,7 @@ int main(void)
 		case SWAP:
 		{
 
-		    s16 *temp = workBuf_X;
+		    float *temp = workBuf_X;
 			workBuf_X = storeBuf_X;
 			storeBuf_X = temp;
 
@@ -110,7 +110,7 @@ int main(void)
 			storeBuf_Z = temp;
 
 			statoCorrente = FFT;
-			//cont = 0;
+			cont = 0;
 			break;
 		}
 		case FFT: {break;}

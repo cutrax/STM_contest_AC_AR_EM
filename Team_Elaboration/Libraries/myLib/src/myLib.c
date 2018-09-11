@@ -25,7 +25,7 @@ static uint8_t GYR_ACC_newValues;
 
 
 u16 cont; //Dal main
-s16 *storeBuf_X, *storeBuf_Y, *storeBuf_Z; //Dal main
+float *storeBuf_X, *storeBuf_Y, *storeBuf_Z; //Dal main
 /*
  * myUSART2_Init
  * Inizializza la USART2 con i relativi pin PA2(TX) e PA3(RX)
@@ -798,11 +798,7 @@ void EXTI9_5_IRQHandler(void)
 	if(EXTI_GetITStatus(EXTI_Line5) == SET) //Acc Gyr
 	{
 		s16 acc[3]; //X [0]->Y [1]->Z [2]
-/*
-				holdData_X[i] = ((((float)holdDataBuffer_X[i])*LINEAR_ACC_SENSE0)/1000)*GRAVITY_ACC;
-				holdData_Y[i] = ((((float)holdDataBuffer_Y[i])*LINEAR_ACC_SENSE0)/1000)*GRAVITY_ACC;
-				holdData_Z[i] = ((((float)holdDataBuffer_Z[i])*LINEAR_ACC_SENSE0)/1000)*GRAVITY_ACC;
-*/
+
 		//Leggi tutti gli assi dell'accelerometro
 		//A prescindere che ci sia lo spazio o meno!
 		//Il clear dell'interruzione deve sempre avvenire
@@ -815,14 +811,11 @@ void EXTI9_5_IRQHandler(void)
 		else
 		{
 			//Salvo i campioni che via via si vanno presentando
-			storeBuf_X[cont] = acc[0];
-			storeBuf_Y[cont] = acc[1];
-			storeBuf_Z[cont] = acc[2];
+			storeBuf_X[cont] = ((((float)acc[0])*LINEAR_ACC_SENSE0)/1000)*GRAVITY_ACC;
+			storeBuf_Y[cont] = ((((float)acc[1])*LINEAR_ACC_SENSE0)/1000)*GRAVITY_ACC;
+			storeBuf_Z[cont] = ((((float)acc[2])*LINEAR_ACC_SENSE0)/1000)*GRAVITY_ACC;
 			cont++;
 		}
-
-
-
 
 		//GYR_ACC_newValues = SET;
 
