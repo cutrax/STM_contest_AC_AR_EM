@@ -27,8 +27,6 @@ SOFTWARE.
 ******************************************************************************
 */
 
-
-
 /* Includes */
 #include "stm32f4xx.h"
 #include <stdio.h>
@@ -36,11 +34,8 @@ SOFTWARE.
 #include "myLib.h"
 /* Private macro */
 
-
 typedef enum {ATTESA = 0, SWAP, FFT} states_t;
 /* Private variables */
-
-
 
 float dataBuffer0_X[n_C], dataBuffer0_Y[n_C], dataBuffer0_Z[n_C];
 float dataBuffer1_X[n_C], dataBuffer1_Y[n_C], dataBuffer1_Z[n_C];
@@ -62,8 +57,6 @@ extern u16 cont; //Da condividere con la ISR
 
 states_t statoCorrente = ATTESA;
 
-
-
 int main(void)
 {
 	storeBuf_X = dataBuffer0_X;
@@ -78,8 +71,6 @@ int main(void)
 
     myUSART2_Init();
 	myMEMSBoard_Init();
-
-
 
   /* Infinite loop */
 	while (1)
@@ -116,31 +107,8 @@ int main(void)
 		case FFT: {break;}
 
 		}
-		/*if(myBar_newData())
-		{
-			printf("Pressione: %d.%d hPa\r\n",myInt(myBar_Get()), my2decs(myBar_Get()));
-		}*/
-
-		/*if(myHumTemp_newData())
-		{
-			printf("Temperatura: %d.%d *C; Umidita': %d.%d \r\n\n",myInt(myHumTemp_Temp_Get()), my2decs(myHumTemp_Temp_Get()),myInt(myHumTemp_Hum_Get()), my2decs(myHumTemp_Hum_Get()));
-		}*/
 		
-		if(myGyrAcc_newData())
-		{
-
-			/*printf("Accelerazione lungo Z: %d.%d m/s^2\r\n", myInt(myAcc_Get_Z()), my2decs(myAcc_Get_Z()));
-			printf("Accelerazione lungo X: %d.%d m/s^2\r\n", myInt(myAcc_Get_Y()), my2decs(myAcc_Get_Y()));
-			printf("Accelerazione lungo Y: %d.%d m/s^2\r\n\n\n", myInt(myAcc_Get_X()), my2decs(myAcc_Get_X()));
-
-			printf("Velocita' angolare lungo Z: %d.%d dps\r\n", myInt(myGyr_Get_Z()), my2decs(myGyr_Get_Z()));
-			printf("Velocita' angolare lungo X: %d.%d dps\r\n", myInt(myGyr_Get_Y()), my2decs(myGyr_Get_Y()));
-			printf("velocita' angolare lungo Y: %d.%d dps\r\n\n\n", myInt(myGyr_Get_X()), my2decs(myGyr_Get_X()));
-*/
-
-
-		}
-		myDelay_ms(5000);
+		//myDelay_ms(5000);
 
   }
 }

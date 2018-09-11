@@ -427,7 +427,8 @@ myI2C_Init(); //Bus I2C
 myBar_Init(); //Barometro
 myHumTemp_Init(); //Umidità e Temperatura
 
-//Inizializzo accelerometro e giroscopio con parametri di default
+//Inizializzo accelerometro alla frequenza di campionamento di 952 Hz
+//banda filtro anti-aliasing: 408 Hz, giroscopio spento
 myGyrAcc_StructInit(&MyGyrAcc_InitStructure);
 myGyrAcc_Init(&MyGyrAcc_InitStructure);
 }
@@ -701,25 +702,22 @@ uint8_t myHumTemp_newData(void)
  *
  */
 
-/**myGyrAcc_StructInit: INIZIALIZZAZIONE STRUTTURA CON VALORI DI DEFAULT
- * I valori di default (impostati da Emanuele) sono i seguenti:
+/**myGyrAcc_StructInit: INIZIALIZZAZIONE STRUTTURA
  *
- * -OUTPUT DATA RATE GIROSCOPIO: 59.5Hz;
  *
- * -SCALA GIROSCOPIO = 245dps;
+ * -GIROSCOPIO: SPENTO (Powered down);
  *
- * -BANDA: LA BANDA (BITS BW_G[1:0]) Dipende dall'ODR selezionato quando
- * accelerometro e giroscopio sono entrambi abilitati. Avendo scelto ODR pari a
- * 59.5Hz, settando i bit BW_G[1:0] = 00, si ottiene una frequenza di taglio pari a
- * 16Hz. Per maggiori approfondimenti consultare la tabella nel manuale del sensore a pag.40;
+ * Solo accelerometro acceso;
  *
- * -OUTPUT DATA RATE ACCELEROMETRO: l'ho impostato in modo da abilitare sia accelerometro che giroscopio
- * (istruzioni seguite passo passo dal manuale), cioè ODR = 000 (Power Down). In questo modo l'accelerometro
- * è abilitato allo stesso ODR del giroscopio;
+ * -OUTPUT DATA RATE ACCELEROMETRO: l'ho impostato in modo da abilitare solo l'accelerometro.
+ * (istruzioni seguite passo passo dal manuale), cioè ODR = 110 (952 Hz).
+ *
  *
  * -SCALA ACCELEROMETRO: (+/-)2g;
  *
- * -BANDA ACCELEROMETRO: Bandwidth selection. Default value: 0
+ * -BANDA ACCELEROMETRO: 408 Hz;
+ *
+ *  Bandwidth selection. Default value: 0
 (0: bandwidth determined by ODR selection:
 - BW = 408 Hz when ODR = 952 Hz, 50 Hz, 10 Hz;
 - BW = 211 Hz when ODR = 476 Hz;
@@ -731,11 +729,11 @@ uint8_t myHumTemp_newData(void)
  */
 void myGyrAcc_StructInit(MyGyrAcc_InitTypeDef *MyGyrAcc_InitStruct)
 {
-	      MyGyrAcc_InitStruct->MyGyrOutput_DataRate = GYR_ODR_3;
+	      MyGyrAcc_InitStruct->MyGyrOutput_DataRate = GYR_ODR_1;
 	 	  MyGyrAcc_InitStruct->MyGyrFull_Scale = GYR_FULLSCALE_245;
 	 	  MyGyrAcc_InitStruct->MyGyrBandwith_Sel = BANDWITH_00;
-	 	  MyGyrAcc_InitStruct->MyAccOutput_DataRate = ACC_ODR_1;
-	 	  MyGyrAcc_InitStruct->MyAccFull_Scale = ACC_FULLSCALE_00;
+	 	  MyGyrAcc_InitStruct->MyAccOutput_DataRate = ACC_ODR_7;
+	 	  MyGyrAcc_InitStruct->MyAccFull_Scale = ACC_FULLSCALE_10;
 	 	  MyGyrAcc_InitStruct->MyAcc_Bandwith_Sel = BW_SCAL_ODR_0;
 	 	  MyGyrAcc_InitStruct->My_Acc_AntiAliasingBwSel = BW_XL_00;
 }

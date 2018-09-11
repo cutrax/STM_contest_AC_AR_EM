@@ -487,8 +487,8 @@ typedef struct
  *
  */
 
-void myGyrAcc_StructInit(MyGyrAcc_InitTypeDef *MyGyrAcc_InitStruct); //Inizializza struttura con valori di default
-void myGyrAcc_Init(MyGyrAcc_InitTypeDef *MyGyrAcc_InitStruct); //Inizializza i sensori
+void myGyrAcc_StructInit(MyGyrAcc_InitTypeDef *MyGyrAcc_InitStruct); //Inizializza struttura
+void myGyrAcc_Init(MyGyrAcc_InitTypeDef *MyGyrAcc_InitStruct); //Inizializza i sensori (in questo caso solo l'accelerometro)
 
 float myAcc_Get_X(void); //Legge l'accelerazione lungo X
 float myAcc_Get_Y(void); //Legge l'accelerazione lungo Y
