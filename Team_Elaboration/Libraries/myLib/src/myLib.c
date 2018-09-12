@@ -1013,7 +1013,7 @@ complex* DFT_naive(complex* x, int N) {
   *
   * @expects: N1*N2 = N
   */
-complex* FFT_CooleyTukey(complex* input, int N, int N1, int N2) {
+complex* FFT_CooleyTukey(float* input, int N, int N1, int N2) {
     int k1, k2;
 
     /* Allocate columnwise matrix */
@@ -1031,7 +1031,9 @@ complex* FFT_CooleyTukey(complex* input, int N, int N1, int N2) {
     /* Reshape input into N1 columns */
     for (k1 = 0; k1 < N1; k1++) {
         for(k2 = 0; k2 < N2; k2++) {
-            columns[k1][k2] = input[N1*k2 + k1];
+        	//Qui c'è la mia modificaaaa
+        	complex temp = {input[N1*k2 + k1],0};
+            columns[k1][k2] = temp;
         }
     }
 

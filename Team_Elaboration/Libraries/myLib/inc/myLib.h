@@ -527,7 +527,7 @@ complex add(complex left, complex right);
 complex multiply(complex left, complex right);
 
 complex* DFT_naive(complex* x, int N);
-complex* FFT_CooleyTukey(complex* x, int N, int N1, int N2);
+complex* FFT_CooleyTukey(float* x, int N, int N1, int N2);
 
 #define d_M                      3     //Dimensione matrici (3 righe, 3 colonne)
 #define n_C        952  //Numero campioni acquisiti se Fc = 952 Hz, lavorando all'interno
