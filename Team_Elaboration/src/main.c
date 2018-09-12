@@ -35,6 +35,7 @@ SOFTWARE.
 /* Private macro */
 
 typedef enum {ATTESA = 0, SWAP, FFT} states_t;
+
 /* Private variables */
 
 float dataBuffer0_X[n_C], dataBuffer0_Y[n_C], dataBuffer0_Z[n_C];

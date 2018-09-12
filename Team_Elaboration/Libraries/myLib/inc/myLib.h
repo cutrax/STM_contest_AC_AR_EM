@@ -12,6 +12,7 @@
 #include "stm32f4xx_gpio.h"
 #include "stm32f4xx_rcc.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include <math.h>
 
 
@@ -514,12 +515,26 @@ uint8_t my2decs(float var); //Due decimali
  *****************************ELABORAZIONE DEI SEGNALI****************************
  *********************************************************************************
  */
-#define N                      3     //Dimensione matrici (3 righe, 3 colonne)
+#define PI 3.1415926535897932384626434
+
+typedef struct complex_t{
+	float re;
+	float im;
+} complex;
+
+complex conv_from_polar(float r, float radians);
+complex add(complex left, complex right);
+complex multiply(complex left, complex right);
+
+complex* DFT_naive(complex* x, int N);
+complex* FFT_CooleyTukey(complex* x, int N, int N1, int N2);
+
+#define d_M                      3     //Dimensione matrici (3 righe, 3 colonne)
 #define n_C        952  //Numero campioni acquisiti se Fc = 952 Hz, lavorando all'interno
                                     //di una finestra di 1 secondo
 
 void matriceDiRotazione_Init(float theta, float psi); //Inizializzazione matrice di rotazione
-void debugMatrice(float matrix[N][N]);
+void debugMatrice(float matrix[d_M][d_M]);
 
 
 #endif /* MYLIB_INC_MYLIB_H_ */
