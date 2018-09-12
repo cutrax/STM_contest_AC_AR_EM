@@ -104,7 +104,12 @@ int main(void)
 			cont = 0;
 			break;
 		}
-		case FFT: {break;}
+		case FFT: {
+
+			myDelay_ms(100);
+			statoCorrente = ATTESA;
+			break;
+		}
 
 		}
 		
