@@ -398,6 +398,34 @@ void myI2C_MultipleWriteReg(uint8_t BaseAddr, uint8_t Reg, uint8_t *buf, uint8_t
  */
 
 /*
+ * WATCHDOG
+ * *************ATTENZIONE**********
+ * **UTILIZZARE LA FUNZIONE "IWDG_ReloadCounter()" per far ricominciare il conteggio, altrimenti
+ * il watchdog va a zero e il sistema si resetta.**
+ * *********************************
+ *  */
+void myWatchDog_Init(void)
+{
+	//Abilito l'accesso ai registri per inserire il valore di prescaler e di conteggio da cui partire
+	IWDG_WriteAccessCmd(IWDG_WriteAccess_Enable);
+	//Setto il prescaler
+	IWDG_SetPrescaler(IWDG_Prescaler_4);
+	//Imposto il conteggio iniziale (per 10ms), per info guardare la tabella 62 del manuale a pag 416.
+	/*
+	 * 0x0FFF sta a 512 ms, 0x000 sta a 0.125ms. Pertanto se vogliamo contare per 10ms:
+	 *
+	 * 4096:512ms = X:10ms; ->  X= (4096*10)/512 = 80 = 0x0050.
+	 */
+	IWDG_SetReload(0x0050);
+	//Abilito il watchdog
+	IWDG_Enable();
+}
+
+/*
+ * FINE WATCHDOG
+ */
+
+/*
  * INIZIO FUNZIONI MEMS IKS01A1
  */
 

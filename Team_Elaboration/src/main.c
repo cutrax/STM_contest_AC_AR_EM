@@ -90,7 +90,7 @@ int main(void)
 
 		case SWAP:
 		{
-			printf("Numero campioni acquisiti: %d\n", cont);
+			//printf("Numero campioni acquisiti: %d\n", cont);
 		    float *temp = workBuf_X;
 			workBuf_X = storeBuf_X;
 			storeBuf_X = temp;
