@@ -84,6 +84,7 @@ int main(void)
            if(cont == n_C){
         	   statoCorrente = SWAP;
            }
+
            break;
 		}
 
