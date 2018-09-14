@@ -72,6 +72,7 @@ int main(void)
 
     myUSART2_Init();
 	myMEMSBoard_Init();
+	myLED_Init();
 
   /* Infinite loop */
 	while (1)
@@ -88,13 +89,12 @@ int main(void)
 
 		case SWAP:
 		{
-
 		    float *temp = workBuf_X;
 			workBuf_X = storeBuf_X;
 			storeBuf_X = temp;
 
 			temp = workBuf_Y;
-			workBuf_Y = storeBuf_X;
+			workBuf_Y = storeBuf_Y;
 			storeBuf_Y = temp;
 
 			temp = workBuf_Z;
@@ -103,6 +103,7 @@ int main(void)
 
 			statoCorrente = FFT;
 			cont = 0;
+			GPIO_ToggleBits(GPIOA,GPIO_Pin_5);
 			break;
 		}
 		case FFT: {

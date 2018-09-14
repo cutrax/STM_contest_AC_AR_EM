@@ -786,8 +786,9 @@ void myGyrAcc_Init(MyGyrAcc_InitTypeDef *MyGyrAcc_InitStruct)
 
 	myI2C_WriteReg(CHIP_ADDR, CTRL_REG1_G_ADDR , maskReg);
 	myI2C_WriteReg(CHIP_ADDR, CTRL_REG6_XL_ADDR, maskReg1);
-	//Interruzioni sia per Gyr che Acc
-	myI2C_WriteReg(CHIP_ADDR,INT_CTRL_ADDR, 0b00000011);
+	//Interruzioni per Acc
+	myI2C_WriteReg(CHIP_ADDR,INT_CTRL_ADDR, 0b00000001);
+
 
 	EXTI_GenerateSWInterrupt(EXTI_Line5);
 }
