@@ -409,22 +409,11 @@ void myI2C_MultipleWriteReg(uint8_t BaseAddr, uint8_t Reg, uint8_t *buf, uint8_t
 
 void myMEMSBoard_Init(void)
 {
-
-MyGyrAcc_InitTypeDef MyGyrAcc_InitStructure;
-
 myI2C_Init(); //Bus I2C
 //	myMag_Init(); //Magnetometro
 myBar_Init(); //Barometro
 myHumTemp_Init(); //Umidità e Temperatura
-
-//Inizializzo accelerometro alla frequenza di campionamento di 952 Hz
-//banda filtro anti-aliasing: 408 Hz, giroscopio spento
-myGyrAcc_StructInit(&MyGyrAcc_InitStructure);
-myGyrAcc_Init(&MyGyrAcc_InitStructure);
 }
-
-
-
 
 /*
  * myBar_Init

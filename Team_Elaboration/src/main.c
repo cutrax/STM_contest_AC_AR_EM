@@ -71,7 +71,7 @@ int main(void)
 	cont = 0;
 
     myUSART2_Init();
-	myMEMSBoard_Init();
+	myAccBoard_Init();
 	myLED_Init();
 
   /* Infinite loop */
@@ -90,6 +90,7 @@ int main(void)
 
 		case SWAP:
 		{
+			printf("Numero campioni acquisiti: %d\n", cont);
 		    float *temp = workBuf_X;
 			workBuf_X = storeBuf_X;
 			storeBuf_X = temp;

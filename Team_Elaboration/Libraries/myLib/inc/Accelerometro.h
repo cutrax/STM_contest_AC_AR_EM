@@ -444,6 +444,7 @@ typedef struct
  *
  */
 
+void myAccBoard_Init(void); //Attiva solo l'accelerometro
 void myGyrAcc_StructInit(MyGyrAcc_InitTypeDef *MyGyrAcc_InitStruct); //Inizializza struttura
 void myGyrAcc_Init(MyGyrAcc_InitTypeDef *MyGyrAcc_InitStruct); //Inizializza i sensori (in questo caso solo l'accelerometro)
 

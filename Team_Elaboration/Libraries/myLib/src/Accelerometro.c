@@ -47,10 +47,26 @@ void myGyrAcc_StructInit(MyGyrAcc_InitTypeDef *MyGyrAcc_InitStruct)
 	 	  MyGyrAcc_InitStruct->My_Acc_AntiAliasingBwSel = BW_XL_00;
 }
 
+/**myAccBoard_Init:
+ * Attiva solo l'accelerometro.
+ *
+ */
+void myAccBoard_Init(void)
+{
+	MyGyrAcc_InitTypeDef MyGyrAcc_InitStructure;
+
+	myI2C_Init(); //Bus I2C
+	//Inizializzo accelerometro alla frequenza di campionamento di 952 Hz
+	//banda filtro anti-aliasing: 408 Hz, giroscopio spento
+	myGyrAcc_StructInit(&MyGyrAcc_InitStructure);
+	myGyrAcc_Init(&MyGyrAcc_InitStructure);
+}
+
 /**myGyrAcc_Init:
  * scrive negli opportuni registri di controllo del chip (in questo caso
  * CTRL_REG1_G, CTRL_REG6_XL), i valori dichiarati nella struttura.
  */
+
 void myGyrAcc_Init(MyGyrAcc_InitTypeDef *MyGyrAcc_InitStruct)
 {
 	GPIO_InitTypeDef pb5Init;
@@ -96,7 +112,6 @@ void myGyrAcc_Init(MyGyrAcc_InitTypeDef *MyGyrAcc_InitStruct)
 	myI2C_WriteReg(CHIP_ADDR, CTRL_REG6_XL_ADDR, maskReg1);
 	//Interruzioni per Acc
 	myI2C_WriteReg(CHIP_ADDR,INT_CTRL_ADDR, 0b00000001);
-
 
 	EXTI_GenerateSWInterrupt(EXTI_Line5);
 }
