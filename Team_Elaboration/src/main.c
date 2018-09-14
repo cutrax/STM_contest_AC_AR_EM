@@ -32,6 +32,8 @@ SOFTWARE.
 #include <stdio.h>
 #include <math.h>
 #include "myLib.h"
+#include "fft.h"
+
 /* Private macro */
 
 typedef enum {ATTESA = 0, SWAP, FFT} states_t;
@@ -40,7 +42,6 @@ typedef enum {ATTESA = 0, SWAP, FFT} states_t;
 
 float dataBuffer0_X[n_C], dataBuffer0_Y[n_C], dataBuffer0_Z[n_C];
 float dataBuffer1_X[n_C], dataBuffer1_Y[n_C], dataBuffer1_Z[n_C];
-
 float *workBuf_X, *workBuf_Y, *workBuf_Z;
 extern float *storeBuf_X, *storeBuf_Y, *storeBuf_Z; //Da condividere con la ISR
 extern u16 cont; //Da condividere con la ISR
@@ -90,6 +91,7 @@ int main(void)
 
 		case SWAP:
 		{
+
 			//printf("Numero campioni acquisiti: %d\n", cont);
 		    float *temp = workBuf_X;
 			workBuf_X = storeBuf_X;
@@ -106,12 +108,34 @@ int main(void)
 			statoCorrente = FFT;
 			cont = 0;
 			GPIO_ToggleBits(GPIOA,GPIO_Pin_5);
+			__disable_irq();
 			break;
 		}
 		case FFT: {
+			printf("FFT\n");
+			//myDelay_ms(100);
+           // Definisco le uscite della FFT
+			complex *outBuf_X, *outBuf_Y, *outBuf_Z;
 
-			myDelay_ms(100);
-			statoCorrente = ATTESA;
+		    outBuf_X = FFT_CooleyTukey(workBuf_X, n_C, n2_C, n1_C);
+		    printf("Ho calcolato la prima. . .\r\n");
+			outBuf_Y = FFT_CooleyTukey(workBuf_Y, n_C, n2_C, n1_C);
+			printf("Ho calcolato la seconda. . .\r\n");
+			//outBuf_Z = FFT_CooleyTukey(workBuf_Z, n_C, n1_C, n2_C);
+			//printf("Ho calcolato la terza. . .\r\n");
+
+			printf("Stampo i valori di outBuf_X:\n\n");
+			for(int i=0; i < n_C; i++){
+				printf(" %d.%d,\t%d.%d\r\n", myInt(outBuf_X[i].re), my2decs(outBuf_X[i].im));
+			}
+
+
+			//Dealloco gli spazi di memoria utilizzati per le FFT
+			free(outBuf_X);
+		    free(outBuf_Y);
+			free(outBuf_Z);
+
+			while(1);
 			break;
 		}
 

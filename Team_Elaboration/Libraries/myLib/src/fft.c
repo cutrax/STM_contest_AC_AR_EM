@@ -48,7 +48,7 @@ complex* DFT_naive(complex* x, int N) {
   */
 complex* FFT_CooleyTukey(float* input, int N, int N1, int N2) {
     int k1, k2;
-
+    printf("Calcolo la FFT. . .\r\n");
     /* Allocate columnwise matrix */
     complex** columns = (complex**) malloc(sizeof(struct complex_t*) * N1);
     for(k1 = 0; k1 < N1; k1++) {
@@ -104,5 +104,6 @@ complex* FFT_CooleyTukey(float* input, int N, int N1, int N2) {
     }
     free(columns);
     free(rows);
+    printf("Fine calcolo\n\n");
     return output;
 }
