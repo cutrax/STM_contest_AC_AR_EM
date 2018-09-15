@@ -33,17 +33,22 @@ SOFTWARE.
 #include <math.h>
 #include "myLib.h"
 #include "fft.h"
+#define ARM_MATH_CM4
+#include <arm_math.h>
+#include <arm_const_structs.h>
 
 /* Private macro */
+
+
 
 typedef enum {ATTESA = 0, SWAP, FFT} states_t;
 
 /* Private variables */
 
-float dataBuffer0_X[n_C], dataBuffer0_Y[n_C], dataBuffer0_Z[n_C];
-float dataBuffer1_X[n_C], dataBuffer1_Y[n_C], dataBuffer1_Z[n_C];
-float *workBuf_X, *workBuf_Y, *workBuf_Z;
-extern float *storeBuf_X, *storeBuf_Y, *storeBuf_Z; //Da condividere con la ISR
+complex dataBuffer0_X[n_C], dataBuffer0_Y[n_C], dataBuffer0_Z[n_C];
+complex dataBuffer1_X[n_C], dataBuffer1_Y[n_C], dataBuffer1_Z[n_C];
+complex *workBuf_X, *workBuf_Y, *workBuf_Z;
+extern complex *storeBuf_X, *storeBuf_Y, *storeBuf_Z; //Da condividere con la ISR
 extern u16 cont; //Da condividere con la ISR
 
 /* Private function prototypes */
@@ -61,6 +66,8 @@ states_t statoCorrente = ATTESA;
 
 int main(void)
 {
+
+
 	storeBuf_X = dataBuffer0_X;
 	storeBuf_Y = dataBuffer0_Y;
 	storeBuf_Z = dataBuffer0_Z;
@@ -70,7 +77,6 @@ int main(void)
 	workBuf_Z = dataBuffer1_Z;
 
 	cont = 0;
-
     myUSART2_Init();
 	myAccBoard_Init();
 	myLED_Init();
@@ -93,7 +99,7 @@ int main(void)
 		{
 
 			//printf("Numero campioni acquisiti: %d\n", cont);
-		    float *temp = workBuf_X;
+		    complex *temp = workBuf_X;
 			workBuf_X = storeBuf_X;
 			storeBuf_X = temp;
 
@@ -108,34 +114,32 @@ int main(void)
 			statoCorrente = FFT;
 			cont = 0;
 			GPIO_ToggleBits(GPIOA,GPIO_Pin_5);
-			__disable_irq();
 			break;
 		}
 		case FFT: {
-			printf("FFT\n");
-			//myDelay_ms(100);
-           // Definisco le uscite della FFT
-			complex *outBuf_X, *outBuf_Y, *outBuf_Z;
+			printf("FFT\r\n");
 
-		    outBuf_X = FFT_CooleyTukey(workBuf_X, n_C, n2_C, n1_C);
-		    printf("Ho calcolato la prima. . .\r\n");
-			outBuf_Y = FFT_CooleyTukey(workBuf_Y, n_C, n2_C, n1_C);
-			printf("Ho calcolato la seconda. . .\r\n");
-			//outBuf_Z = FFT_CooleyTukey(workBuf_Z, n_C, n1_C, n2_C);
-			//printf("Ho calcolato la terza. . .\r\n");
-
-			printf("Stampo i valori di outBuf_X:\n\n");
-			for(int i=0; i < n_C; i++){
-				printf(" %d.%d,\t%d.%d\r\n", myInt(outBuf_X[i].re), my2decs(outBuf_X[i].im));
-			}
-
-
-			//Dealloco gli spazi di memoria utilizzati per le FFT
-			free(outBuf_X);
-		    free(outBuf_Y);
-			free(outBuf_Z);
-
-			while(1);
+			arm_cfft_f32(&arm_cfft_sR_f32_len1024,(float *)workBuf_X,0,0);
+			arm_cfft_f32(&arm_cfft_sR_f32_len1024,(float *)workBuf_Y,0,0);
+		    arm_cfft_f32(&arm_cfft_sR_f32_len1024,(float *)workBuf_Z,0,0);
+		    printf("Ho calcolato le FFT. . .\r\n");
+		    printf("Normalizzo\r\n");
+		    for(int i=0;i<n_C;i++)
+		    {
+		    	workBuf_X[i].re /= n_C;
+		    	workBuf_X[i].im /= n_C;
+		    	workBuf_Y[i].re /= n_C;
+		    	workBuf_Y[i].im /= n_C;
+		    	workBuf_Z[i].re /= n_C;
+		    	workBuf_Z[i].im /= n_C;
+		    }
+			printf("Stampo i valori della DC:\r\n");
+			printf("X:%f,Y:%f,Z:%f\r\n",workBuf_X[0].re,workBuf_Y[0].re,workBuf_Z[0].re);
+//			for(int i=0; i < n_C; i++){
+//				//printf("%d.%d,%d.%d\r\n", myInt(workBuf_Z[i].re), my2decs(workBuf_Z[i].re), myInt(workBuf_Z[i].im), my2decs(workBuf_Z[i].im));
+//				printf("%f;%f\r\n", workBuf_Z[i].re, workBuf_Z[i].im);
+//			}
+			statoCorrente = ATTESA;
 			break;
 		}
 

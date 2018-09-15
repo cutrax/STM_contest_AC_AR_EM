@@ -79,7 +79,7 @@ void myUSART2_Init(void)
 
 	//Inizializza la struttura di configurazione
 	USART_StructInit(&usart2Init);
-	//usart2Init.USART_BaudRate = 115200;
+	usart2Init.USART_BaudRate = 115200;
 	//No parity, no flow control, RX_TX, 1 stop bit...
 
 	//Configura la periferica
@@ -780,7 +780,7 @@ void myDelay_ms(u32 del)
 
 uint8_t my2decs(float var)
 {
-	return (int) ((var - floor(var)) * 100);
+	return (int) ((var - floorf(var)) * 100);
 }
 
 /*
@@ -790,7 +790,7 @@ uint8_t my2decs(float var)
 
 uint16_t myInt(float var)
 {
-	return (int) floor(var);
+	return (int) floorf(var);
 }
 
 /*

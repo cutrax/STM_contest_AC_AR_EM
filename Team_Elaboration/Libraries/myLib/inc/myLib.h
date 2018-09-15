@@ -15,6 +15,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include "Accelerometro.h"
 
 //Comunicazione I2C
 void myI2C_Init(void); //Inizializza la comunicazione I2C
@@ -60,7 +61,8 @@ uint8_t my2decs(float var); //Due decimali
  */
 
 #define d_M                      3     //Dimensione matrici (3 righe, 3 colonne)
-#define n_C        952  //Numero campioni acquisiti se Fc = 952 Hz, lavorando all'interno di una finestra di 1 secondo
+#define n_C        1024  //Numero campioni acquisiti(conviene per FFT)
+#define Tw			1.0756302521 //Fc=952, Tw per 1024 campioni
 //Fattori il cui prodotto è 952
 #define n1_C       119
 #define n2_C       8

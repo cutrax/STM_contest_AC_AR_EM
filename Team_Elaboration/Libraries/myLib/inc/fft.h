@@ -21,6 +21,7 @@ complex conv_from_polar(float r, float radians);
 complex add(complex left, complex right);
 complex multiply(complex left, complex right);
 
+
 complex* DFT_naive(complex* x, int N);
 complex* FFT_CooleyTukey(float* x, int N, int N1, int N2);
 

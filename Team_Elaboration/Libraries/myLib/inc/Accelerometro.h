@@ -11,7 +11,7 @@
 #include "myLib.h"
 
 //ACCELERAZIONE DI GRAVITA' (in m/s^2)
-#define GRAVITY_ACC                                 (9.8)
+#define GRAVITY_ACC                                 (9.81)
 
 /**FATTORE DI MOLTIPLICAZIONE PER OTTENERE L'ACCELERAZIONE IN G
  *
