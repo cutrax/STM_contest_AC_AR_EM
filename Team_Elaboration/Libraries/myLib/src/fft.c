@@ -5,7 +5,7 @@
  *      Author: Emanuele
  */
 
-#include "fft.h"
+#include <fft.h>
 
 complex conv_from_polar(float r, float radians){
 	complex result;
@@ -118,3 +118,4 @@ complex* FFT_CooleyTukey(float* input, int N, int N1, int N2) {
     printf("Fine calcolo\n\n");
     return output;
 }
+

@@ -8,6 +8,7 @@
 #include "Accelerometro.h"
 #include "myLib.h"
 #include "fft.h"
+#include "Elaborazioni.h"
 
 u16 cont; //Dal main
 float *storeBuf_X, *storeBuf_Y, *storeBuf_Z; //Dal main

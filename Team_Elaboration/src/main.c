@@ -33,6 +33,7 @@ SOFTWARE.
 #include <math.h>
 #include "myLib.h"
 #include "fft.h"
+#include "Elaborazioni.h"
 #define ARM_MATH_CM4
 #include <arm_math.h>
 #include <arm_const_structs.h>
@@ -49,6 +50,8 @@ float dataBuffer0_X[n_C], dataBuffer0_Y[n_C], dataBuffer0_Z[n_C];
 float dataBuffer1_X[n_C], dataBuffer1_Y[n_C], dataBuffer1_Z[n_C];
 complex fft_X[n_C/2], fft_Y[n_C/2], fft_Z[n_C/2];
 float *workBuf_X, *workBuf_Y, *workBuf_Z;
+//Beta e alpha angoli di rotazione. Cosb,sinb,cosa,sina, variabili dove salvare i valori calcolati di cos e sin
+float beta, alpha, cosb, sinb, cosa, sina;
 extern float *storeBuf_X, *storeBuf_Y, *storeBuf_Z; //Da condividere con la ISR
 extern u16 cont; //Da condividere con la ISR
 
@@ -132,12 +135,12 @@ int main(void)
 			//Il prototipo della RFFT intende come buffer di uscita un buffer float
 			//organizzato alternando prima la parte reale, e poi quella immaginaria
 			//Il casting è obbligatorio, ma nella pratica i dati si troveranno in formato comlesso
-			printf("FFT\r\n");
+		//	printf("FFT\r\n");
 			arm_rfft_fast_f32(&S,workBuf_X,(float *)fft_X,0);
 			arm_rfft_fast_f32(&S,workBuf_Y,(float *)fft_Y,0);
 			arm_rfft_fast_f32(&S,workBuf_Z,(float *)fft_Z,0);
-		    printf("Ho calcolato le FFT. . .\r\n");
-		    printf("Normalizzo\r\n");
+		  //  printf("Ho calcolato le FFT. . .\r\n");
+		  //  printf("Normalizzo\r\n");
 		    for(int i=0;i<n_C/2;i++)
 		    {
 		    	fft_X[i].re /= n_C;
@@ -150,23 +153,34 @@ int main(void)
 
 //			printf("Stampo i valori della DC:\r\n");
 //			printf("X:%f,Y:%f,Z:%f\r\n",fft_X[0].re,fft_Y[0].re,fft_Z[0].re);
-		    printf("FFT terminata\r\n");
+		 //   printf("FFT terminata\r\n");
 		    //Fine FFT
 
 		    //Rotazione
-		    printf("Rotazione\r\n");
-		    //Qui dovrei calcolare gli angoli theta e psi..
+		  //  printf("Rotazione\r\n");
+
+		    //Calcolo angolo beta
+		    beta = -atan2(fft_X[0].re, fft_Z[0].re);
+		    //Salvo cos e sin di beta
+		    cosb = cos(beta);
+            sinb = sin(beta);
+
+            //Cacolo angolo alpha
+            alpha = atan2(fft_Y[0].re, (cosb*fft_Z[0].re)-(sinb*fft_X[0].re));
+            //Salvo cos e sin di alpha
+            cosa = cos(alpha);
+            sina = sin(alpha);
 
 		    //Inizializzo la matrice di rotazione
-		    //theta e psi a cavolo
-		    printf("Matrice\r\n");
-		    matriceDiRotazione_Init(rotMat,0.5,0.5);
+		    //printf("Matrice\r\n");
+		    matriceDiRotazione_Init(rotMat, cosb, sinb, cosa, sina);
 
 		    //Calcolo il prodotto tra i vettori FFT e la matrice
 		    //Le destinazioni sono i work_buff, visti stavolta come buffer complex, per risparmiare memoria
 		    //visto che i campioni nel DT non servono più
-		    printf("Prodotto\r\n");
-		    complex *workBuf_X_cplx = (complex *) workBuf_X;
+		  //  printf("Prodotto\r\n");
+
+		   /* complex *workBuf_X_cplx = (complex *) workBuf_X;
 		    complex *workBuf_Y_cplx = (complex *) workBuf_Y;
 		    complex *workBuf_Z_cplx = (complex *) workBuf_Z;
 		    for(int i=0;i<n_C/2;i++)
@@ -180,7 +194,21 @@ int main(void)
 		    	workBuf_Z_cplx[i] = complex_add(complex_multiply_r_c(rotMat[2][0],fft_X[i]),complex_multiply_r_c(rotMat[2][1],fft_Y[i]));
 				workBuf_Z_cplx[i] = complex_add(workBuf_Z_cplx[i], complex_multiply_r_c(rotMat[2][2],fft_Z[i]));
 		    }
-		    printf("Fine Rotazione\r\n");
+
+		    printf("X:%f, Y:%f, Z:%f \r\n", workBuf_X_cplx[0].re, workBuf_Y_cplx[0].re, workBuf_Z_cplx[0].re);*/
+
+            //IMPLEMENTAZIONE MIAAA
+		    complex *workingBuf_X_cplx = (complex *) workBuf_X;
+		    complex *workingBuf_Y_cplx = (complex *) workBuf_Y;
+		    complex *workingBuf_Z_cplx = (complex *) workBuf_Z;
+
+		    workingBuf_X_cplx = rotazione_X(rotMat, fft_X, fft_Y, fft_Z, workBuf_X);
+		    workingBuf_Y_cplx = rotazione_Y(rotMat, fft_X, fft_Y, fft_Z, workBuf_Y);
+		    workingBuf_Z_cplx= rotazione_Z(rotMat, fft_X, fft_Y, fft_Z, workBuf_Z);
+
+		    printf("X:%f, Y:%f, Z:%f\r\n", workingBuf_X_cplx[0].re, workingBuf_Y_cplx[0].re, workingBuf_Z_cplx[0].re);
+
+		   // printf("Fine Rotazione\r\n");
 			statoCorrente = ATTESA;
 			break;
 		}

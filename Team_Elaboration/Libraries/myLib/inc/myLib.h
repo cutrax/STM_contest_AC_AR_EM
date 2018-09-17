@@ -17,6 +17,7 @@
 #include <math.h>
 #include "Accelerometro.h"
 
+
 //Comunicazione I2C
 void myI2C_Init(void); //Inizializza la comunicazione I2C
 uint8_t myI2C_ReadReg(uint8_t BaseAddr,uint8_t Reg); //Scrivi un registro I2C
@@ -54,18 +55,5 @@ uint8_t myHumTemp_newData(void); //SET se vi sono nuovi dati non ancora letti
 void myDelay_ms(uint32_t del); //Delay approssimativo
 uint16_t myInt(float var); //Parte intera sinistra
 uint8_t my2decs(float var); //Due decimali
-
-/*********************************************************************************
- *****************************ELABORAZIONE DEI SEGNALI****************************
- *********************************************************************************
- */
-
-#define d_M                      3     //Dimensione matrici (3 righe, 3 colonne)
-#define n_C        1024  //Numero campioni acquisiti(conviene per FFT)
-#define Tw			1.0756302521 //Fc=952, Tw per 1024 campioni
-
-void matriceDiRotazione_Init(float matrice[d_M][d_M], float theta, float psi); //Inizializzazione matrice di rotazione
-void debugMatrice(float matrice[d_M][d_M]);
-
 
 #endif /* MYLIB_INC_MYLIB_H_ */

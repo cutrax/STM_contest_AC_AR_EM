@@ -820,50 +820,10 @@ int _write(int file,char *ptr, int len)
 return len;
 }
 
-/*******************************************************************************************************
- *********************** FUNZIONI DI GESTIONE ELABORAZIONE DEI SEGNALI IN INGRESSO**********************
- *******************************************************************************************************
- *******************************************************************************************************
- */
 
-/*
- * matricediRotazione_Init
- * Inizializzazione matrice di rotazione,
- * i parametri theta e psi corrispondono ad alpha e beta rispettivamente.
- */
 
-void matriceDiRotazione_Init(float matrice[d_M][d_M], float theta, float psi){
 
-	/* float matrice[d_M][d_M] = { {cos(psi), 0, sin(psi)},
 
-	                        {sin(theta)*sin(psi), cos(theta), -sin(theta)*cos(psi)},
 
-							{-cos(theta)*sin(psi), sin(theta), cos(theta)*cos(psi)} };
-	*/
-	matrice[0][0] = cosf(psi); //Elementi prima riga
-	matrice[0][1] = 0;
-	matrice[0][2] = sinf(psi);
-
-	matrice[1][0] = sinf(theta)*sinf(psi);          //Elementi seconda riga
-	matrice[1][1] = cosf(theta);
-	matrice[1][2] = -sinf(theta)*cosf(psi);
-
-	matrice[2][0] = -cosf(theta)*sinf(psi);//Elementi terza riga
-	matrice[2][1] = sinf(theta);
-	matrice[2][2] = cosf(theta)*cosf(psi);
-}
-
-void debugMatrice(float matrice[d_M][d_M]){
-
-	int i,j;
-	for(i = 0; i < d_M; i++)
-		{
-			for(j = 0; j < d_M; j++)
-			{
-				printf("%f", matrice[i][j]);
-			}
-			printf("\r\n");
-		}
-}
 
 
