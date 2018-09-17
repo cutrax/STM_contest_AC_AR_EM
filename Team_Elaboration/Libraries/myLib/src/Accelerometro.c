@@ -10,7 +10,7 @@
 #include "fft.h"
 
 u16 cont; //Dal main
-complex *storeBuf_X, *storeBuf_Y, *storeBuf_Z; //Dal main
+float *storeBuf_X, *storeBuf_Y, *storeBuf_Z; //Dal main
 
 /**myGyrAcc_StructInit: INIZIALIZZAZIONE STRUTTURA
  *
@@ -139,12 +139,9 @@ void EXTI9_5_IRQHandler(void)
 		else
 		{
 			//Salvo i campioni che via via si vanno presentando
-			storeBuf_X[cont].re = ((((float)acc[0])*LINEAR_ACC_SENSE1)/1000)*GRAVITY_ACC;
-			storeBuf_Y[cont].re = ((((float)acc[1])*LINEAR_ACC_SENSE1)/1000)*GRAVITY_ACC;
-			storeBuf_Z[cont].re = ((((float)acc[2])*LINEAR_ACC_SENSE1)/1000)*GRAVITY_ACC;
-			storeBuf_X[cont].im = 0;
-			storeBuf_Y[cont].im = 0;
-			storeBuf_Z[cont].im = 0;
+			storeBuf_X[cont] = ((((float)acc[0])*LINEAR_ACC_SENSE1)/1000)*GRAVITY_ACC;
+			storeBuf_Y[cont] = ((((float)acc[1])*LINEAR_ACC_SENSE1)/1000)*GRAVITY_ACC;
+			storeBuf_Z[cont] = ((((float)acc[2])*LINEAR_ACC_SENSE1)/1000)*GRAVITY_ACC;
 			cont++;
 		}
 

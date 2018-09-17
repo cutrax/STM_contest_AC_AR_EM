@@ -63,12 +63,9 @@ uint8_t my2decs(float var); //Due decimali
 #define d_M                      3     //Dimensione matrici (3 righe, 3 colonne)
 #define n_C        1024  //Numero campioni acquisiti(conviene per FFT)
 #define Tw			1.0756302521 //Fc=952, Tw per 1024 campioni
-//Fattori il cui prodotto è 952
-#define n1_C       119
-#define n2_C       8
 
-void matriceDiRotazione_Init(float theta, float psi); //Inizializzazione matrice di rotazione
-void debugMatrice(float matrix[d_M][d_M]);
+void matriceDiRotazione_Init(float matrice[d_M][d_M], float theta, float psi); //Inizializzazione matrice di rotazione
+void debugMatrice(float matrice[d_M][d_M]);
 
 
 #endif /* MYLIB_INC_MYLIB_H_ */

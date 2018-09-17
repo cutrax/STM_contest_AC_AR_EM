@@ -45,12 +45,16 @@ typedef enum {ATTESA = 0, SWAP, FFT} states_t;
 
 /* Private variables */
 
-complex dataBuffer0_X[n_C], dataBuffer0_Y[n_C], dataBuffer0_Z[n_C];
-complex dataBuffer1_X[n_C], dataBuffer1_Y[n_C], dataBuffer1_Z[n_C];
-complex *workBuf_X, *workBuf_Y, *workBuf_Z;
-extern complex *storeBuf_X, *storeBuf_Y, *storeBuf_Z; //Da condividere con la ISR
+float dataBuffer0_X[n_C], dataBuffer0_Y[n_C], dataBuffer0_Z[n_C];
+float dataBuffer1_X[n_C], dataBuffer1_Y[n_C], dataBuffer1_Z[n_C];
+complex fft_X[n_C/2], fft_Y[n_C/2], fft_Z[n_C/2];
+float *workBuf_X, *workBuf_Y, *workBuf_Z;
+extern float *storeBuf_X, *storeBuf_Y, *storeBuf_Z; //Da condividere con la ISR
 extern u16 cont; //Da condividere con la ISR
 
+arm_rfft_fast_instance_f32 S;  //Struttura di configurazione di RFFT
+
+float rotMat[3][3];
 /* Private function prototypes */
 /* Private functions */
 
@@ -67,7 +71,7 @@ states_t statoCorrente = ATTESA;
 int main(void)
 {
 
-
+	//Inizializzazione dei puntatori ai buffer
 	storeBuf_X = dataBuffer0_X;
 	storeBuf_Y = dataBuffer0_Y;
 	storeBuf_Z = dataBuffer0_Z;
@@ -76,7 +80,12 @@ int main(void)
 	workBuf_Y = dataBuffer1_Y;
 	workBuf_Z = dataBuffer1_Z;
 
+	//Inizializzazione FFT
+	arm_rfft_fast_init_f32(&S,1024);
+
+	//Contatore di riempimento del buffer azzerato
 	cont = 0;
+
     myUSART2_Init();
 	myAccBoard_Init();
 	myLED_Init();
@@ -99,7 +108,7 @@ int main(void)
 		{
 
 			//printf("Numero campioni acquisiti: %d\n", cont);
-		    complex *temp = workBuf_X;
+		    float *temp = workBuf_X;
 			workBuf_X = storeBuf_X;
 			storeBuf_X = temp;
 
@@ -117,28 +126,61 @@ int main(void)
 			break;
 		}
 		case FFT: {
-			printf("FFT\r\n");
 
-			arm_cfft_f32(&arm_cfft_sR_f32_len1024,(float *)workBuf_X,0,0);
-			arm_cfft_f32(&arm_cfft_sR_f32_len1024,(float *)workBuf_Y,0,0);
-		    arm_cfft_f32(&arm_cfft_sR_f32_len1024,(float *)workBuf_Z,0,0);
+			//Sezione RFFT (FFT reale)
+			//Da un segnale reale produce N/2 campioni complessi nel DF
+			//Il prototipo della RFFT intende come buffer di uscita un buffer float
+			//organizzato alternando prima la parte reale, e poi quella immaginaria
+			//Il casting è obbligatorio, ma nella pratica i dati si troveranno in formato comlesso
+			printf("FFT\r\n");
+			arm_rfft_fast_f32(&S,workBuf_X,(float *)fft_X,0);
+			arm_rfft_fast_f32(&S,workBuf_Y,(float *)fft_Y,0);
+			arm_rfft_fast_f32(&S,workBuf_Z,(float *)fft_Z,0);
 		    printf("Ho calcolato le FFT. . .\r\n");
 		    printf("Normalizzo\r\n");
-		    for(int i=0;i<n_C;i++)
+		    for(int i=0;i<n_C/2;i++)
 		    {
-		    	workBuf_X[i].re /= n_C;
-		    	workBuf_X[i].im /= n_C;
-		    	workBuf_Y[i].re /= n_C;
-		    	workBuf_Y[i].im /= n_C;
-		    	workBuf_Z[i].re /= n_C;
-		    	workBuf_Z[i].im /= n_C;
+		    	fft_X[i].re /= n_C;
+		    	fft_X[i].im /= n_C;
+		    	fft_Y[i].re /= n_C;
+		    	fft_Y[i].im /= n_C;
+		    	fft_Z[i].re /= n_C;
+		    	fft_Z[i].im /= n_C;
 		    }
-			printf("Stampo i valori della DC:\r\n");
-			printf("X:%f,Y:%f,Z:%f\r\n",workBuf_X[0].re,workBuf_Y[0].re,workBuf_Z[0].re);
-//			for(int i=0; i < n_C; i++){
-//				//printf("%d.%d,%d.%d\r\n", myInt(workBuf_Z[i].re), my2decs(workBuf_Z[i].re), myInt(workBuf_Z[i].im), my2decs(workBuf_Z[i].im));
-//				printf("%f;%f\r\n", workBuf_Z[i].re, workBuf_Z[i].im);
-//			}
+
+//			printf("Stampo i valori della DC:\r\n");
+//			printf("X:%f,Y:%f,Z:%f\r\n",fft_X[0].re,fft_Y[0].re,fft_Z[0].re);
+		    printf("FFT terminata\r\n");
+		    //Fine FFT
+
+		    //Rotazione
+		    printf("Rotazione\r\n");
+		    //Qui dovrei calcolare gli angoli theta e psi..
+
+		    //Inizializzo la matrice di rotazione
+		    //theta e psi a cavolo
+		    printf("Matrice\r\n");
+		    matriceDiRotazione_Init(rotMat,0.5,0.5);
+
+		    //Calcolo il prodotto tra i vettori FFT e la matrice
+		    //Le destinazioni sono i work_buff, visti stavolta come buffer complex, per risparmiare memoria
+		    //visto che i campioni nel DT non servono più
+		    printf("Prodotto\r\n");
+		    complex *workBuf_X_cplx = (complex *) workBuf_X;
+		    complex *workBuf_Y_cplx = (complex *) workBuf_Y;
+		    complex *workBuf_Z_cplx = (complex *) workBuf_Z;
+		    for(int i=0;i<n_C/2;i++)
+		    {
+		    	workBuf_X_cplx[i] = complex_add(complex_multiply_r_c(rotMat[0][0],fft_X[i]),complex_multiply_r_c(rotMat[0][1],fft_Y[i]));
+		    	workBuf_X_cplx[i] = complex_add(workBuf_X_cplx[i], complex_multiply_r_c(rotMat[0][2],fft_Z[i]));
+
+		    	workBuf_Y_cplx[i] = complex_add(complex_multiply_r_c(rotMat[1][0],fft_X[i]),complex_multiply_r_c(rotMat[1][1],fft_Y[i]));
+		    	workBuf_Y_cplx[i] = complex_add(workBuf_Y_cplx[i], complex_multiply_r_c(rotMat[1][2],fft_Z[i]));
+
+		    	workBuf_Z_cplx[i] = complex_add(complex_multiply_r_c(rotMat[2][0],fft_X[i]),complex_multiply_r_c(rotMat[2][1],fft_Y[i]));
+				workBuf_Z_cplx[i] = complex_add(workBuf_Z_cplx[i], complex_multiply_r_c(rotMat[2][2],fft_Z[i]));
+		    }
+		    printf("Fine Rotazione\r\n");
 			statoCorrente = ATTESA;
 			break;
 		}

@@ -14,17 +14,25 @@ complex conv_from_polar(float r, float radians){
 	return result;
 }
 
-complex add(complex left, complex right){
+complex complex_add(complex left, complex right){
 	complex result;
 	result.re = left.re + right.re;
 	result.im = left.im + right.im;
 	return result;
 }
 
-complex multiply(complex left, complex right){
+complex complex_multiply(complex left, complex right){
 	complex result;
 	result.re = left.re*right.re - left.im*right.im;
 	result.im = left.re*right.im + left.im*right.re;
+	return result;
+}
+
+complex complex_multiply_r_c(float left, complex right)
+{
+	complex result;
+	result.re = left*right.re;
+	result.im = left*right.im;
 	return result;
 }
 
@@ -38,7 +46,7 @@ complex* DFT_naive(complex* x, int N) {
         X[k].re = 0.0;
         X[k].im = 0.0;
         for(n = 0; n < N; n++) {
-            X[k] = add(X[k], multiply(x[n], conv_from_polar(1, -2*PI*n*k/N)));
+            X[k] = complex_add(X[k], complex_multiply(x[n], conv_from_polar(1, -2*PI*n*k/N)));
         }
     }
 
@@ -81,7 +89,7 @@ complex* FFT_CooleyTukey(float* input, int N, int N1, int N2) {
     /* Multiply by the twiddle factors  ( e^(-2*pi*j/N * k1*k2)) and transpose */
     for(k1 = 0; k1 < N1; k1++) {
         for (k2 = 0; k2 < N2; k2++) {
-            rows[k2][k1] = multiply(conv_from_polar(1, -2.0*PI*k1*k2/N), columns[k1][k2]);
+            rows[k2][k1] = complex_multiply(conv_from_polar(1, -2.0*PI*k1*k2/N), columns[k1][k2]);
         }
     }
 

@@ -18,8 +18,9 @@ typedef struct complex_t{
 } complex;
 
 complex conv_from_polar(float r, float radians);
-complex add(complex left, complex right);
-complex multiply(complex left, complex right);
+complex complex_add(complex left, complex right);
+complex complex_multiply(complex left, complex right);
+complex complex_multiply_r_c(float left, complex right);
 
 
 complex* DFT_naive(complex* x, int N);
