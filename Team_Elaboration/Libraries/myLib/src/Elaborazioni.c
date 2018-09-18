@@ -45,6 +45,105 @@ complex* rotazione_Z(float matrice[d_M][d_M], complex* buf_x, complex* buf_y, co
 	return workBuf_Z_cplx;
 }
 
+/*
+ * Funzioni di pesatura
+ * Parametri:
+ *
+ * buf_z -> workingBuf_Z_cplx;
+ * weight_z -> frequencyWeight_Z;
+ *
+ * buf_x -> workingBuf_X_cplx;
+ * weight_x -> frequencyWeight_XY;
+ *
+ * buf_y -> workingBuf_Y_cplx;
+ * weight_y -> frequencyWeight_XY;
+ */
+
+void pesatura_Z(complex* buf_z,const u16* weight_z){
+
+	 buf_z[1].re*= weight_z[0];
+	 buf_z[2].re*= weight_z[1];
+	 buf_z[3].re*= weight_z[2];
+	 buf_z[4].re*= weight_z[3];
+	 buf_z[5].re*= weight_z[4];
+	 buf_z[6].re*= weight_z[5];
+	 buf_z[9].re*= weight_z[6];
+	 buf_z[11].re*= weight_z[7];
+	 buf_z[13].re*= weight_z[8];
+	 buf_z[17].re*= weight_z[9];
+	 buf_z[22].re*= weight_z[10];
+	 buf_z[27].re*= weight_z[11];
+	 buf_z[34].re*= weight_z[12];
+	 buf_z[43].re*= weight_z[13];
+	 buf_z[54].re*= weight_z[14];
+	 buf_z[68].re*= weight_z[15];
+	 buf_z[86].re*= weight_z[16];
+	 buf_z[108].re*= weight_z[17];
+	 buf_z[134].re*= weight_z[18];
+	 buf_z[172].re*= weight_z[19];
+	 buf_z[215].re*= weight_z[20];
+	 buf_z[269].re*= weight_z[21];
+	 buf_z[339].re*= weight_z[22];
+	 buf_z[430].re*= weight_z[23];
+}
+
+void pesatura_X(complex* buf_x,const u16* weight_x ){
+
+	     buf_x[1].re*= weight_x[0];
+		 buf_x[2].re*= weight_x[1];
+		 buf_x[3].re*= weight_x[2];
+		 buf_x[4].re*= weight_x[3];
+		 buf_x[5].re*= weight_x[4];
+		 buf_x[6].re*= weight_x[5];
+		 buf_x[9].re*= weight_x[6];
+		 buf_x[11].re*= weight_x[7];
+		 buf_x[13].re*= weight_x[8];
+		 buf_x[17].re*= weight_x[9];
+		 buf_x[22].re*= weight_x[10];
+		 buf_x[27].re*= weight_x[11];
+		 buf_x[34].re*= weight_x[12];
+		 buf_x[43].re*= weight_x[13];
+		 buf_x[54].re*= weight_x[14];
+		 buf_x[68].re*= weight_x[15];
+		 buf_x[86].re*= weight_x[16];
+		 buf_x[108].re*= weight_x[17];
+		 buf_x[134].re*= weight_x[18];
+		 buf_x[172].re*= weight_x[19];
+		 buf_x[215].re*= weight_x[20];
+		 buf_x[269].re*= weight_x[21];
+		 buf_x[339].re*= weight_x[22];
+		 buf_x[430].re*= weight_x[23];
+
+}
+
+void pesatura_Y(complex* buf_y,const u16* weight_y){
+
+	     buf_y[1].re*= weight_y[0];
+		 buf_y[2].re*= weight_y[1];
+		 buf_y[3].re*= weight_y[2];
+		 buf_y[4].re*= weight_y[3];
+		 buf_y[5].re*= weight_y[4];
+		 buf_y[6].re*= weight_y[5];
+		 buf_y[9].re*= weight_y[6];
+		 buf_y[11].re*= weight_y[7];
+		 buf_y[13].re*= weight_y[8];
+		 buf_y[17].re*= weight_y[9];
+		 buf_y[22].re*= weight_y[10];
+		 buf_y[27].re*= weight_y[11];
+		 buf_y[34].re*= weight_y[12];
+		 buf_y[43].re*= weight_y[13];
+		 buf_y[54].re*= weight_y[14];
+		 buf_y[68].re*= weight_y[15];
+		 buf_y[86].re*= weight_y[16];
+		 buf_y[108].re*= weight_y[17];
+		 buf_y[134].re*= weight_y[18];
+		 buf_y[172].re*= weight_y[19];
+		 buf_y[215].re*= weight_y[20];
+		 buf_y[269].re*= weight_y[21];
+		 buf_y[339].re*= weight_y[22];
+		 buf_y[430].re*= weight_y[23];
+}
+
 
 /*
  * matricediRotazione_Init
