@@ -105,6 +105,9 @@ extern u16 cont; //Da condividere con la ISR
 
 arm_rfft_fast_instance_f32 S;  //Struttura di configurazione di RFFT
 
+u8 windowCont;
+float a8[60];
+
 float rotMat[3][3];
 /* Private function prototypes */
 /* Private functions */
@@ -136,6 +139,8 @@ int main(void)
 
 	//Contatore di riempimento del buffer azzerato
 	cont = 0;
+	//Contatore di finestre elaborate... e dunque di tempo
+	windowCont = 0;
 
     myUSART2_Init();
 	myAccBoard_Init();
@@ -208,16 +213,16 @@ int main(void)
 		  //  printf("Rotazione\r\n");
 
 		    //Calcolo angolo beta
-		    beta = -atan2(fft_X[0].re, fft_Z[0].re);
+		    beta = -atan2f(fft_X[0].re, fft_Z[0].re);
 		    //Salvo cos e sin di beta
-		    cosb = cos(beta);
-            sinb = sin(beta);
+		    cosb = cosf(beta);
+            sinb = sinf(beta);
 
             //Cacolo angolo alpha
-            alpha = atan2(fft_Y[0].re, (cosb*fft_Z[0].re)-(sinb*fft_X[0].re));
+            alpha = atan2f(fft_Y[0].re, (cosb*fft_Z[0].re)-(sinb*fft_X[0].re));
             //Salvo cos e sin di alpha
-            cosa = cos(alpha);
-            sina = sin(alpha);
+            cosa = cosf(alpha);
+            sina = sinf(alpha);
 
 		    //Inizializzo la matrice di rotazione
 		    //printf("Matrice\r\n");
@@ -226,33 +231,17 @@ int main(void)
 		    //Calcolo il prodotto tra i vettori FFT e la matrice
 		    //Le destinazioni sono i work_buff, visti stavolta come buffer complex, per risparmiare memoria
 		    //visto che i campioni nel DT non servono più
-		  //  printf("Prodotto\r\n");
+		    printf("Prodotto\r\n");
 
-		   /* complex *workBuf_X_cplx = (complex *) workBuf_X;
-		    complex *workBuf_Y_cplx = (complex *) workBuf_Y;
-		    complex *workBuf_Z_cplx = (complex *) workBuf_Z;
-		    for(int i=0;i<n_C/2;i++)
-		    {
-		    	workBuf_X_cplx[i] = complex_add(complex_multiply_r_c(rotMat[0][0],fft_X[i]),complex_multiply_r_c(rotMat[0][1],fft_Y[i]));
-		    	workBuf_X_cplx[i] = complex_add(workBuf_X_cplx[i], complex_multiply_r_c(rotMat[0][2],fft_Z[i]));
 
-		    	workBuf_Y_cplx[i] = complex_add(complex_multiply_r_c(rotMat[1][0],fft_X[i]),complex_multiply_r_c(rotMat[1][1],fft_Y[i]));
-		    	workBuf_Y_cplx[i] = complex_add(workBuf_Y_cplx[i], complex_multiply_r_c(rotMat[1][2],fft_Z[i]));
-
-		    	workBuf_Z_cplx[i] = complex_add(complex_multiply_r_c(rotMat[2][0],fft_X[i]),complex_multiply_r_c(rotMat[2][1],fft_Y[i]));
-				workBuf_Z_cplx[i] = complex_add(workBuf_Z_cplx[i], complex_multiply_r_c(rotMat[2][2],fft_Z[i]));
-		    }
-
-		    printf("X:%f, Y:%f, Z:%f \r\n", workBuf_X_cplx[0].re, workBuf_Y_cplx[0].re, workBuf_Z_cplx[0].re);*/
-
-            //IMPLEMENTAZIONE MIAAA
 		    complex *workingBuf_X_cplx = (complex *) workBuf_X;
 		    complex *workingBuf_Y_cplx = (complex *) workBuf_Y;
 		    complex *workingBuf_Z_cplx = (complex *) workBuf_Z;
 
-		    workingBuf_X_cplx = rotazione_X(rotMat, fft_X, fft_Y, fft_Z, workBuf_X);
-		    workingBuf_Y_cplx = rotazione_Y(rotMat, fft_X, fft_Y, fft_Z, workBuf_Y);
-		    workingBuf_Z_cplx= rotazione_Z(rotMat, fft_X, fft_Y, fft_Z, workBuf_Z);
+		    rotazione_X(rotMat, fft_X, fft_Y, fft_Z, workingBuf_X_cplx);
+		    rotazione_Y(rotMat, fft_X, fft_Y, fft_Z, workingBuf_Y_cplx);
+		    rotazione_Z(rotMat, fft_X, fft_Y, fft_Z, workingBuf_Z_cplx);
+		    printf("Fine Rotazione\r\n");
 
 		    printf("X:%f, Y:%f, Z:%f\r\n", workingBuf_X_cplx[0].re, workingBuf_Y_cplx[0].re, workingBuf_Z_cplx[0].re);
 
@@ -346,12 +335,39 @@ int main(void)
              */
 
 		    //Pesature utilizzando le funzioni
+		    printf("Inizio pesatura\r\n");
+
 		    pesatura_Z(workingBuf_Z_cplx, frequencyWeight_Z);
 		    pesatura_X(workingBuf_X_cplx, frequencyWeight_XY);
 		    pesatura_Y(workingBuf_Y_cplx, frequencyWeight_XY);
 
-		   // printf("Fine Rotazione\r\n");
-			statoCorrente = ATTESA;
+		    printf("Fine pesatura\r\n");
+
+
+		    //Calcolo degli RMS di ogni asse, a partire dallo spettro
+		    //Il prodotto scalare di ogni vettore complesso per se stesso e diviso 2(V^2/2 per l'RMS)
+		    float rmsX=0;
+		    float rmsY=0;
+		    float rmsZ=0;
+
+		    for(int i=0;i<n_C/2;i++)
+		    {
+		    	rmsX += workingBuf_X_cplx[i].re*workingBuf_X_cplx[i].re + workingBuf_X_cplx[i].im*workingBuf_X_cplx[i].im;
+		    	rmsY += workingBuf_Y_cplx[i].re*workingBuf_Y_cplx[i].re + workingBuf_Y_cplx[i].im*workingBuf_Y_cplx[i].im;
+		    	rmsZ += workingBuf_Z_cplx[i].re*workingBuf_Z_cplx[i].re + workingBuf_Z_cplx[i].im*workingBuf_Z_cplx[i].im;
+		    }
+
+		    rmsX /=n_C;
+		    rmsY /=n_C;
+		    rmsZ /=n_C;
+
+		    rmsX = sqrtf(rmsX);
+		    rmsY = sqrtf(rmsY);
+		    rmsZ = sqrtf(rmsZ);
+		    printf("ax:%f\r\n",rmsX);
+		    printf("ay:%f\r\n",rmsY);
+		    printf("az:%f\r\n",rmsZ);
+		    statoCorrente = ATTESA;
 			break;
 		}
 

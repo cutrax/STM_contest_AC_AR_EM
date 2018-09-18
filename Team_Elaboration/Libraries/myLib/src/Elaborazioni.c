@@ -7,9 +7,8 @@
 
 #include "Elaborazioni.h"
 
-complex* rotazione_X(float matrice[d_M][d_M], complex* buf_x, complex* buf_y, complex* buf_z, float* workBuffer_X){
+void rotazione_X(float matrice[d_M][d_M], complex* buf_x, complex* buf_y, complex* buf_z, complex* workBuf_X_cplx){
 
-	 complex *workBuf_X_cplx = (complex*) workBuffer_X;
 
 
       for(int i=0;i<n_C/2;i++){
@@ -17,32 +16,26 @@ complex* rotazione_X(float matrice[d_M][d_M], complex* buf_x, complex* buf_y, co
     	  	   workBuf_X_cplx[i] = complex_add(workBuf_X_cplx[i], complex_multiply_r_c(matrice[0][2], buf_z[i]));
 
       }
-
-	 return workBuf_X_cplx;
 }
 
-complex* rotazione_Y(float matrice[d_M][d_M], complex* buf_x, complex* buf_y, complex* buf_z, float* workBuffer_Y){
+void rotazione_Y(float matrice[d_M][d_M], complex* buf_x, complex* buf_y, complex* buf_z, complex* workBuf_Y_cplx){
 
-	 complex *workBuf_Y_cplx = (complex*) workBuffer_Y;
 
       for(int i=0; i<n_C/2; i++){
 		workBuf_Y_cplx[i] = complex_add(complex_multiply_r_c(matrice[1][0],buf_x[i]),complex_multiply_r_c(matrice[1][1],buf_y[i]));
 	    workBuf_Y_cplx[i] = complex_add(workBuf_Y_cplx[i], complex_multiply_r_c(matrice[1][2],buf_z[i]));
       }
 
-	return workBuf_Y_cplx;
 }
 
-complex* rotazione_Z(float matrice[d_M][d_M], complex* buf_x, complex* buf_y, complex* buf_z, float* workBuffer_Z){
+void rotazione_Z(float matrice[d_M][d_M], complex* buf_x, complex* buf_y, complex* buf_z, complex* workBuf_Z_cplx){
 
-	complex* workBuf_Z_cplx = (complex*) workBuffer_Z;
 
 	    for(int i=0; i<n_C/2; i++){
 		workBuf_Z_cplx[i] = complex_add(complex_multiply_r_c(matrice[2][0],buf_x[i]),complex_multiply_r_c(matrice[2][1],buf_y[i]));
 	    workBuf_Z_cplx[i] = complex_add(workBuf_Z_cplx[i], complex_multiply_r_c(matrice[2][2],buf_z[i]));
 	    }
 
-	return workBuf_Z_cplx;
 }
 
 /*

@@ -17,9 +17,9 @@
 
 void matriceDiRotazione_Init(float matrice[d_M][d_M], float cosx, float sinx, float cosy, float siny); //Inizializzazione matrice di rotazione
 
-complex* rotazione_X(float matrice[d_M][d_M], complex* buf_x, complex* buf_y, complex* buf_z, float* workBuffer_X);
-complex* rotazione_Y(float matrice[d_M][d_M], complex* buf_x, complex* buf_y, complex* buf_z, float* workBuffer_Y);
-complex* rotazione_Z(float matrice[d_M][d_M], complex* buf_x, complex* buf_y, complex* buf_z, float* workBuffer_Z);
+void rotazione_X(float matrice[d_M][d_M], complex* buf_x, complex* buf_y, complex* buf_z, complex* workBuf_X_cplx);
+void rotazione_Y(float matrice[d_M][d_M], complex* buf_x, complex* buf_y, complex* buf_z, complex* workBuf_Y_cplx);
+void rotazione_Z(float matrice[d_M][d_M], complex* buf_x, complex* buf_y, complex* buf_z, complex* workBuf_Z_cplx);
 
 void pesatura_Z(complex* buf_z,const u16* weight_z );
 void pesatura_X(complex* buf_x,const u16* weight_x);
