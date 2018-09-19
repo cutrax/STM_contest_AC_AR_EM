@@ -91,6 +91,7 @@ static const u16 frequencyWeight_Z[n_F] = {991, 1012, 1022, 1024, 1013, 974, 891
 static const u16 frequencyWeight_XY[n_F] = {1011, 890, 642, 512, 409, 323, 253, 212, 161,
 		                                  125, 100, 80, 63.2, 49.4, 38.8, 29.5, 21.1, 14.1,
 										  8.63, 4.55, 2.43, 1.26, 0.64, 0.31};
+//Fattore di scala temporale dato che l'a8 è calcolato in una finestra di un secondo
 
 float dataBuffer0_X[n_C], dataBuffer0_Y[n_C], dataBuffer0_Z[n_C];
 float dataBuffer1_X[n_C], dataBuffer1_Y[n_C], dataBuffer1_Z[n_C];
@@ -189,6 +190,14 @@ int main(void)
 			//organizzato alternando prima la parte reale, e poi quella immaginaria
 			//Il casting è obbligatorio, ma nella pratica i dati si troveranno in formato comlesso
 		//	printf("FFT\r\n");
+
+			if(windowCont == 60){
+				windowCont = 0;
+			}
+			else{
+				++windowCont;
+			}
+
 			arm_rfft_fast_f32(&S,workBuf_X,(float *)fft_X,0);
 			arm_rfft_fast_f32(&S,workBuf_Y,(float *)fft_Y,0);
 			arm_rfft_fast_f32(&S,workBuf_Z,(float *)fft_Z,0);
@@ -231,7 +240,7 @@ int main(void)
 		    //Calcolo il prodotto tra i vettori FFT e la matrice
 		    //Le destinazioni sono i work_buff, visti stavolta come buffer complex, per risparmiare memoria
 		    //visto che i campioni nel DT non servono più
-		    printf("Prodotto\r\n");
+		    //printf("Prodotto\r\n");
 
 
 		    complex *workingBuf_X_cplx = (complex *) workBuf_X;
@@ -241,9 +250,9 @@ int main(void)
 		    rotazione_X(rotMat, fft_X, fft_Y, fft_Z, workingBuf_X_cplx);
 		    rotazione_Y(rotMat, fft_X, fft_Y, fft_Z, workingBuf_Y_cplx);
 		    rotazione_Z(rotMat, fft_X, fft_Y, fft_Z, workingBuf_Z_cplx);
-		    printf("Fine Rotazione\r\n");
+		    //printf("Fine Rotazione\r\n");
 
-		    printf("X:%f, Y:%f, Z:%f\r\n", workingBuf_X_cplx[0].re, workingBuf_Y_cplx[0].re, workingBuf_Z_cplx[0].re);
+		    //printf("X:%f, Y:%f, Z:%f\r\n", workingBuf_X_cplx[0].re, workingBuf_Y_cplx[0].re, workingBuf_Z_cplx[0].re);
 
 		    //Azzero la gravità
 		    workingBuf_Z_cplx[0].re = 0;
@@ -253,9 +262,9 @@ int main(void)
 		    	scalaFrequenze[j] = j/Tw;
 		    }
 
-		    /*
-		     * Pesature direttamente sul main
-		    Pesatura asse Z
+/*
+		    //  Pesature direttamente sul main
+		    //Pesatura asse Z
 		    workingBuf_Z_cplx[1].re*= frequencyWeight_Z[0];
 		    workingBuf_Z_cplx[2].re*= frequencyWeight_Z[1];
 		    workingBuf_Z_cplx[3].re*= frequencyWeight_Z[2];
@@ -332,16 +341,16 @@ int main(void)
 		  	workingBuf_Y_cplx[269].re*= frequencyWeight_XY[21];
 		  	workingBuf_Y_cplx[339].re*= frequencyWeight_XY[22];
 		  	workingBuf_Y_cplx[430].re*= frequencyWeight_XY[23];
-             */
+*/
 
 		    //Pesature utilizzando le funzioni
-		    printf("Inizio pesatura\r\n");
+		   // printf("Inizio pesatura\r\n");
 
 		    pesatura_Z(workingBuf_Z_cplx, frequencyWeight_Z);
 		    pesatura_X(workingBuf_X_cplx, frequencyWeight_XY);
 		    pesatura_Y(workingBuf_Y_cplx, frequencyWeight_XY);
 
-		    printf("Fine pesatura\r\n");
+		    //printf("Fine pesatura\r\n");
 
 
 		    //Calcolo degli RMS di ogni asse, a partire dallo spettro
@@ -364,9 +373,19 @@ int main(void)
 		    rmsX = sqrtf(rmsX);
 		    rmsY = sqrtf(rmsY);
 		    rmsZ = sqrtf(rmsZ);
-		    printf("ax:%f\r\n",rmsX);
-		    printf("ay:%f\r\n",rmsY);
-		    printf("az:%f\r\n",rmsZ);
+
+		   // printf("ax:%f\r\n",rmsX);
+		    //printf("ay:%f\r\n",rmsY);
+		    //printf("az:%f\r\n",rmsZ);
+
+		    //Moltiplico i valori efficaci su x e y per 1.4
+		    rmsX*= F;
+		    rmsY*= F;
+
+		    //Calcolo degli a(8)
+		   a8[windowCont] =maxRmsValue(rmsX, rmsY, rmsZ)*scala_T;
+           printf("a8[%d] = %f\r\n", windowCont, a8[windowCont]);
+
 		    statoCorrente = ATTESA;
 			break;
 		}
