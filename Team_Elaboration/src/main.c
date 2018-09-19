@@ -45,52 +45,7 @@ SOFTWARE.
 typedef enum {ATTESA = 0, SWAP, FFT} states_t;
 
 /* Private variables */
-/*
- * TABELLA DELLE FREQUENZE PESATE
- *
- * Vettori costanti usati:
- * frequencyWeight_Z[n_F], frequencyWeight_XY[n_F];
- * weight_k: pesatura asse z,
- * weight_d: pesatura assi xy.
- *
- * **************************************
- * F[Hz]       Weight_k        Weight_d *
- *                                      *
- * 1           991             1011     *
- * 2           1012            890      *
- * 3           1022            642      *
- * 4           1024            512      *
- * 5           1013            409      *
- * 6           974             323      *
- * 8           891             253      *
- * 10          776             212      *
- * 12.5        647             161      *
- * 16          512             125      *
- * 20          409             100      *
- * 25          325             80       *
- * 31.5        256             63.2     *
- * 40          199             49.4     *
- * 50          156             38.8     *
- * 63          118             29.5     *
- * 80          84.4            21.1     *
- * 100         56.7            14.1     *
- * 125         34.5            8.63     *
- * 160         18.2            4.55     *
- * 200         9.71            2.43     *
- * 250         5.06            1.26     *
- * 315         2.55            0.64     *
- * 400         1.25            0.31     *
- * **************************************
- * **************************************
- */
 
-static const u16 frequencyWeight_Z[n_F] = {991, 1012, 1022, 1024, 1013, 974, 891, 776,
-		                                  647, 512, 409, 325, 256, 199, 156, 118, 84.4,
-										  56.7, 34.5, 18.2, 9.71, 5.06, 2.55, 1.25};
-
-static const u16 frequencyWeight_XY[n_F] = {1011, 890, 642, 512, 409, 323, 253, 212, 161,
-		                                  125, 100, 80, 63.2, 49.4, 38.8, 29.5, 21.1, 14.1,
-										  8.63, 4.55, 2.43, 1.26, 0.64, 0.31};
 //Fattore di scala temporale dato che l'a8 è calcolato in una finestra di un secondo
 
 float dataBuffer0_X[n_C], dataBuffer0_Y[n_C], dataBuffer0_Z[n_C];
@@ -193,6 +148,15 @@ int main(void)
 
 			if(windowCont == 60){
 				windowCont = 0;
+
+				//Elabora l'a8 totale
+				float a8t = 0;
+				for(int i=0;i<60;i++)
+				{
+					a8t += a8[i]*a8[i];
+				}
+				a8t = sqrtf(a8t);
+				printf("a8 per 60 secondi: %f\r\n",a8t);
 			}
 			else{
 				++windowCont;
@@ -262,93 +226,13 @@ int main(void)
 		    	scalaFrequenze[j] = j/Tw;
 		    }
 
-/*
-		    //  Pesature direttamente sul main
-		    //Pesatura asse Z
-		    workingBuf_Z_cplx[1].re*= frequencyWeight_Z[0];
-		    workingBuf_Z_cplx[2].re*= frequencyWeight_Z[1];
-		    workingBuf_Z_cplx[3].re*= frequencyWeight_Z[2];
-		    workingBuf_Z_cplx[4].re*= frequencyWeight_Z[3];
-		    workingBuf_Z_cplx[5].re*= frequencyWeight_Z[4];
-		    workingBuf_Z_cplx[6].re*= frequencyWeight_Z[5];
-		    workingBuf_Z_cplx[9].re*= frequencyWeight_Z[6];
-		    workingBuf_Z_cplx[11].re*= frequencyWeight_Z[7];
-		    workingBuf_Z_cplx[13].re*= frequencyWeight_Z[8];
-		    workingBuf_Z_cplx[17].re*= frequencyWeight_Z[9];
-		    workingBuf_Z_cplx[22].re*= frequencyWeight_Z[10];
-		    workingBuf_Z_cplx[27].re*= frequencyWeight_Z[11];
-		    workingBuf_Z_cplx[34].re*= frequencyWeight_Z[12];
-		    workingBuf_Z_cplx[43].re*= frequencyWeight_Z[13];
-		    workingBuf_Z_cplx[54].re*= frequencyWeight_Z[14];
-		    workingBuf_Z_cplx[68].re*= frequencyWeight_Z[15];
-		    workingBuf_Z_cplx[86].re*= frequencyWeight_Z[16];
-		    workingBuf_Z_cplx[108].re*= frequencyWeight_Z[17];
-		    workingBuf_Z_cplx[134].re*= frequencyWeight_Z[18];
-		    workingBuf_Z_cplx[172].re*= frequencyWeight_Z[19];
-		    workingBuf_Z_cplx[215].re*= frequencyWeight_Z[20];
-		    workingBuf_Z_cplx[269].re*= frequencyWeight_Z[21];
-		    workingBuf_Z_cplx[339].re*= frequencyWeight_Z[22];
-		    workingBuf_Z_cplx[430].re*= frequencyWeight_Z[23];
-
-		    //Pesatura asse X
-		    workingBuf_X_cplx[1].re*= frequencyWeight_XY[0];
-		  	workingBuf_X_cplx[2].re*= frequencyWeight_XY[1];
-		    workingBuf_X_cplx[3].re*= frequencyWeight_XY[2];
-		    workingBuf_X_cplx[4].re*= frequencyWeight_XY[3];
-		  	workingBuf_X_cplx[5].re*= frequencyWeight_XY[4];
-		  	workingBuf_X_cplx[6].re*= frequencyWeight_XY[5];
-		  	workingBuf_X_cplx[9].re*= frequencyWeight_XY[6];
-		  	workingBuf_X_cplx[11].re*= frequencyWeight_XY[7];
-		  	workingBuf_X_cplx[13].re*= frequencyWeight_XY[8];
-		  	workingBuf_X_cplx[17].re*= frequencyWeight_XY[9];
-		    workingBuf_X_cplx[22].re*= frequencyWeight_XY[10];
-		  	workingBuf_X_cplx[27].re*= frequencyWeight_XY[11];
-		  	workingBuf_X_cplx[34].re*= frequencyWeight_XY[12];
-		    workingBuf_X_cplx[43].re*= frequencyWeight_XY[13];
-		  	workingBuf_X_cplx[54].re*= frequencyWeight_XY[14];
-		  	workingBuf_X_cplx[68].re*= frequencyWeight_XY[15];
-		  	workingBuf_X_cplx[86].re*= frequencyWeight_XY[16];
-		  	workingBuf_X_cplx[108].re*= frequencyWeight_XY[17];
-		  	workingBuf_X_cplx[134].re*= frequencyWeight_XY[18];
-		  	workingBuf_X_cplx[172].re*= frequencyWeight_XY[19];
-		  	workingBuf_X_cplx[215].re*= frequencyWeight_XY[20];
-		  	workingBuf_X_cplx[269].re*= frequencyWeight_XY[21];
-		  	workingBuf_X_cplx[339].re*= frequencyWeight_XY[22];
-		  	workingBuf_X_cplx[430].re*= frequencyWeight_XY[23];
-
-		  	//Pesatura asse Y
-		  	workingBuf_Y_cplx[1].re*= frequencyWeight_XY[0];
-		  	workingBuf_Y_cplx[2].re*= frequencyWeight_XY[1];
-		  	workingBuf_Y_cplx[3].re*= frequencyWeight_XY[2];
-		  	workingBuf_Y_cplx[4].re*= frequencyWeight_XY[3];
-		    workingBuf_Y_cplx[5].re*= frequencyWeight_XY[4];
-		  	workingBuf_Y_cplx[6].re*= frequencyWeight_XY[5];
-		  	workingBuf_Y_cplx[9].re*= frequencyWeight_XY[6];
-		  	workingBuf_Y_cplx[11].re*= frequencyWeight_XY[7];
-		  	workingBuf_Y_cplx[13].re*= frequencyWeight_XY[8];
-		  	workingBuf_Y_cplx[17].re*= frequencyWeight_XY[9];
-		  	workingBuf_Y_cplx[22].re*= frequencyWeight_XY[10];
-		  	workingBuf_Y_cplx[27].re*= frequencyWeight_XY[11];
-		  	workingBuf_Y_cplx[34].re*= frequencyWeight_XY[12];
-		  	workingBuf_Y_cplx[43].re*= frequencyWeight_XY[13];
-		  	workingBuf_Y_cplx[54].re*= frequencyWeight_XY[14];
-		  	workingBuf_Y_cplx[68].re*= frequencyWeight_XY[15];
-		  	workingBuf_Y_cplx[86].re*= frequencyWeight_XY[16];
-		  	workingBuf_Y_cplx[108].re*= frequencyWeight_XY[17];
-		  	workingBuf_Y_cplx[134].re*= frequencyWeight_XY[18];
-		  	workingBuf_Y_cplx[172].re*= frequencyWeight_XY[19];
-		  	workingBuf_Y_cplx[215].re*= frequencyWeight_XY[20];
-		  	workingBuf_Y_cplx[269].re*= frequencyWeight_XY[21];
-		  	workingBuf_Y_cplx[339].re*= frequencyWeight_XY[22];
-		  	workingBuf_Y_cplx[430].re*= frequencyWeight_XY[23];
-*/
 
 		    //Pesature utilizzando le funzioni
-		   // printf("Inizio pesatura\r\n");
+		    //printf("Inizio pesatura\r\n");
 
-		    pesatura_Z(workingBuf_Z_cplx, frequencyWeight_Z);
-		    pesatura_X(workingBuf_X_cplx, frequencyWeight_XY);
-		    pesatura_Y(workingBuf_Y_cplx, frequencyWeight_XY);
+		    pesatura_Z(workingBuf_Z_cplx);
+		    pesatura_X(workingBuf_X_cplx);
+		    pesatura_Y(workingBuf_Y_cplx);
 
 		    //printf("Fine pesatura\r\n");
 
@@ -366,15 +250,15 @@ int main(void)
 		    	rmsZ += workingBuf_Z_cplx[i].re*workingBuf_Z_cplx[i].re + workingBuf_Z_cplx[i].im*workingBuf_Z_cplx[i].im;
 		    }
 
-		    rmsX /=n_C;
-		    rmsY /=n_C;
-		    rmsZ /=n_C;
+		    rmsX /= 2;
+		    rmsY /= 2;
+		    rmsZ /= 2;
 
 		    rmsX = sqrtf(rmsX);
 		    rmsY = sqrtf(rmsY);
 		    rmsZ = sqrtf(rmsZ);
 
-		   // printf("ax:%f\r\n",rmsX);
+		    //printf("ax:%f\r\n",rmsX);
 		    //printf("ay:%f\r\n",rmsY);
 		    //printf("az:%f\r\n",rmsZ);
 
@@ -383,7 +267,7 @@ int main(void)
 		    rmsY*= F;
 
 		    //Calcolo degli a(8)
-		   a8[windowCont] =maxRmsValue(rmsX, rmsY, rmsZ)*scala_T;
+		   a8[windowCont] = maxRmsValue(rmsX, rmsY, rmsZ)*scala_T;
            printf("a8[%d] = %f\r\n", windowCont, a8[windowCont]);
 
 		    statoCorrente = ATTESA;
