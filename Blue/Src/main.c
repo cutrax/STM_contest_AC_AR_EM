@@ -50,14 +50,37 @@
 #include "main.h"
 #include "stm32f4xx_hal.h"
 #include "app_bluenrg-ms.h"
+#include "stm32f4_nucleo_f401re.h"
 
 /* USER CODE BEGIN Includes */
+#include "Accelerometro.h"
+#include "fft.h"
+#include "Elaborazioni.h"
 
+#include <arm_math.h>
+#include <arm_const_structs.h>
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
-I2C_HandleTypeDef hi2c1;
+I2C_HandleTypeDef hi2c1; //I2C HAL Handle
 
+float dataBuffer0_X[n_C], dataBuffer0_Y[n_C], dataBuffer0_Z[n_C];
+float dataBuffer1_X[n_C], dataBuffer1_Y[n_C], dataBuffer1_Z[n_C];
+complex fft_X[n_C/2], fft_Y[n_C/2], fft_Z[n_C/2];
+float *workBuf_X, *workBuf_Y, *workBuf_Z;
+//Beta e alpha angoli di rotazione. Cosb,sinb,cosa,sina, variabili dove salvare i valori calcolati di cos e sin
+float beta, alpha, cosb, sinb, cosa, sina;
+//Contiene le frequenze a cui corrispondono i singoli campioni
+float scalaFrequenze[n_C/2];
+extern float *storeBuf_X, *storeBuf_Y, *storeBuf_Z; //Da condividere con la ISR
+extern uint16_t cont; //Da condividere con la ISR
+
+arm_rfft_fast_instance_f32 S;  //Struttura di configurazione di RFFT
+
+uint8_t windowCont;
+float a8[60];
+
+float rotMat[3][3];
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
 
@@ -84,47 +107,222 @@ static void MX_I2C1_Init(void);
   */
 int main(void)
 {
-  /* USER CODE BEGIN 1 */
+	/* MCU Configuration----------------------------------------------------------*/
 
-  /* USER CODE END 1 */
+	/* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+	HAL_Init();
 
-  /* MCU Configuration----------------------------------------------------------*/
+	/* Configure the system clock */
+	SystemClock_Config();
 
-  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
+	//Inizializzazione dei puntatori ai buffer
+	storeBuf_X = dataBuffer0_X;
+	storeBuf_Y = dataBuffer0_Y;
+	storeBuf_Z = dataBuffer0_Z;
 
-  /* USER CODE BEGIN Init */
+	workBuf_X = dataBuffer1_X;
+	workBuf_Y = dataBuffer1_Y;
+	workBuf_Z = dataBuffer1_Z;
 
-  /* USER CODE END Init */
+	//Inizializzazione FFT
+	arm_rfft_fast_init_f32(&S,1024);
 
-  /* Configure the system clock */
-  SystemClock_Config();
+	//Contatore di riempimento del buffer azzerato
+	cont = 0;
+	//Contatore di finestre elaborate... e dunque di tempo
+	windowCont = 0;
 
-  /* USER CODE BEGIN SysInit */
+	//Azzero lo stato
+	states_t statoCorrente = ATTESA;
+	/* Initialize all configured peripherals */
+	MX_GPIO_Init();
+	MX_I2C1_Init();
+	MX_X_CUBE_BLE1_Init();
+	/* USER CODE BEGIN 2 */
+	myAccBoard_Init();
+	/* USER CODE END 2 */
 
-  /* USER CODE END SysInit */
+	/* Infinite loop */
+	/* USER CODE BEGIN WHILE */
+	while (1)
+	{
+	 MX_X_CUBE_BLE1_Process();
 
-  /* Initialize all configured peripherals */
-  MX_GPIO_Init();
-  MX_I2C1_Init();
-  MX_X_CUBE_BLE1_Init();
-  /* USER CODE BEGIN 2 */
+	 switch(statoCorrente){
+		case ATTESA:
+		{
+			if(cont == n_C){
+			   statoCorrente = SWAP;
+			}
 
-  /* USER CODE END 2 */
+			break;
+		}
 
-  /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
-  while (1)
-  {
+		case SWAP:
+		{
 
-  /* USER CODE END WHILE */
-	 printf("Ciao\r\n");
-  MX_X_CUBE_BLE1_Process();
-  /* USER CODE BEGIN 3 */
-  }
-  /* USER CODE END 3 */
+			//printf("Numero campioni acquisiti: %d\n", cont);
+			float *temp = workBuf_X;
+			workBuf_X = storeBuf_X;
+			storeBuf_X = temp;
+
+			temp = workBuf_Y;
+			workBuf_Y = storeBuf_Y;
+			storeBuf_Y = temp;
+
+			temp = workBuf_Z;
+			workBuf_Z = storeBuf_Z;
+			storeBuf_Z = temp;
+
+			statoCorrente = FFT;
+			cont = 0;
+			BSP_LED_Toggle(LED2);
+			break;
+		}
+		case FFT: {
+
+			//Sezione RFFT (FFT reale)
+			//Da un segnale reale produce N/2 campioni complessi nel DF
+			//Il prototipo della RFFT intende come buffer di uscita un buffer float
+			//organizzato alternando prima la parte reale, e poi quella immaginaria
+			//Il casting è obbligatorio, ma nella pratica i dati si troveranno in formato comlesso
+		//	printf("FFT\r\n");
+
+			if(windowCont == 60){
+				windowCont = 0;
+
+				//Elabora l'a8 totale
+				float a8t = 0;
+				for(int i=0;i<60;i++)
+				{
+					a8t += a8[i]*a8[i];
+				}
+				a8t = sqrtf(a8t);
+				printf("a8 per 60 secondi: %f\r\n",a8t);
+			}
+			else{
+				++windowCont;
+			}
+
+			arm_rfft_fast_f32(&S,workBuf_X,(float *)fft_X,0);
+			arm_rfft_fast_f32(&S,workBuf_Y,(float *)fft_Y,0);
+			arm_rfft_fast_f32(&S,workBuf_Z,(float *)fft_Z,0);
+		  //  printf("Ho calcolato le FFT. . .\r\n");
+		  //  printf("Normalizzo\r\n");
+			for(int i=0;i<n_C/2;i++)
+			{
+				fft_X[i].re /= n_C;
+				fft_X[i].im /= n_C;
+				fft_Y[i].re /= n_C;
+				fft_Y[i].im /= n_C;
+				fft_Z[i].re /= n_C;
+				fft_Z[i].im /= n_C;
+			}
+
+ //			printf("Stampo i valori della DC:\r\n");
+ //			printf("X:%f,Y:%f,Z:%f\r\n",fft_X[0].re,fft_Y[0].re,fft_Z[0].re);
+		 //   printf("FFT terminata\r\n");
+			//Fine FFT
+
+			//Rotazione
+		  //  printf("Rotazione\r\n");
+
+			//Calcolo angolo beta
+			beta = -atan2f(fft_X[0].re, fft_Z[0].re);
+			//Salvo cos e sin di beta
+			cosb = cosf(beta);
+			 sinb = sinf(beta);
+
+			 //Cacolo angolo alpha
+			 alpha = atan2f(fft_Y[0].re, (cosb*fft_Z[0].re)-(sinb*fft_X[0].re));
+			 //Salvo cos e sin di alpha
+			 cosa = cosf(alpha);
+			 sina = sinf(alpha);
+
+			//Inizializzo la matrice di rotazione
+			//printf("Matrice\r\n");
+			matriceDiRotazione_Init(rotMat, cosb, sinb, cosa, sina);
+
+			//Calcolo il prodotto tra i vettori FFT e la matrice
+			//Le destinazioni sono i work_buff, visti stavolta come buffer complex, per risparmiare memoria
+			//visto che i campioni nel DT non servono più
+			//printf("Prodotto\r\n");
+
+
+			complex *workingBuf_X_cplx = (complex *) workBuf_X;
+			complex *workingBuf_Y_cplx = (complex *) workBuf_Y;
+			complex *workingBuf_Z_cplx = (complex *) workBuf_Z;
+
+			rotazione_X(rotMat, fft_X, fft_Y, fft_Z, workingBuf_X_cplx);
+			rotazione_Y(rotMat, fft_X, fft_Y, fft_Z, workingBuf_Y_cplx);
+			rotazione_Z(rotMat, fft_X, fft_Y, fft_Z, workingBuf_Z_cplx);
+			//printf("Fine Rotazione\r\n");
+
+			printf("X:%f, Y:%f, Z:%f\r\n", workingBuf_X_cplx[0].re, workingBuf_Y_cplx[0].re, workingBuf_Z_cplx[0].re);
+
+			//Azzero la gravità
+			workingBuf_Z_cplx[0].re = 0;
+
+			//Scala delle frequenze
+			for( int j=0; j<n_C/2; j++){
+				scalaFrequenze[j] = j/Tw;
+			}
+
+
+			//Pesature utilizzando le funzioni
+			//printf("Inizio pesatura\r\n");
+
+			pesatura_Z(workingBuf_Z_cplx);
+			pesatura_X(workingBuf_X_cplx);
+			pesatura_Y(workingBuf_Y_cplx);
+
+			//printf("Fine pesatura\r\n");
+
+
+			//Calcolo degli RMS di ogni asse, a partire dallo spettro
+			//Il prodotto scalare di ogni vettore complesso per se stesso e diviso 2(V^2/2 per l'RMS)
+			float rmsX=0;
+			float rmsY=0;
+			float rmsZ=0;
+
+			for(int i=0;i<n_C/2;i++)
+			{
+				rmsX += workingBuf_X_cplx[i].re*workingBuf_X_cplx[i].re + workingBuf_X_cplx[i].im*workingBuf_X_cplx[i].im;
+				rmsY += workingBuf_Y_cplx[i].re*workingBuf_Y_cplx[i].re + workingBuf_Y_cplx[i].im*workingBuf_Y_cplx[i].im;
+				rmsZ += workingBuf_Z_cplx[i].re*workingBuf_Z_cplx[i].re + workingBuf_Z_cplx[i].im*workingBuf_Z_cplx[i].im;
+			}
+
+			rmsX /= 2;
+			rmsY /= 2;
+			rmsZ /= 2;
+
+			rmsX = sqrtf(rmsX);
+			rmsY = sqrtf(rmsY);
+			rmsZ = sqrtf(rmsZ);
+
+			//printf("ax:%f\r\n",rmsX);
+			//printf("ay:%f\r\n",rmsY);
+			//printf("az:%f\r\n",rmsZ);
+
+			//Moltiplico i valori efficaci su x e y per 1.4
+			rmsX*= F;
+			rmsY*= F;
+
+			//Calcolo degli a(8)
+		   a8[windowCont] = maxRmsValue(rmsX, rmsY, rmsZ)*scala_T;
+			printf("a8[%d] = %f\r\n", windowCont, a8[windowCont]);
+
+			statoCorrente = ATTESA;
+			break;
+		}
+
+		}
+
+
+	}
 
 }
+
 
 /**
   * @brief System Clock Configuration

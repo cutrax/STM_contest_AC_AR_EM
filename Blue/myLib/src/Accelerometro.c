@@ -6,12 +6,14 @@
  */
 
 #include "Accelerometro.h"
-#include "myLib.h"
 #include "fft.h"
 #include "Elaborazioni.h"
-
-u16 cont; //Dal main
+#include <stm32f4xx_hal.h>
+#include <stdint.h>
+uint16_t cont; //Dal main
+I2C_HandleTypeDef hi2c1; //Handle per I2C
 float *storeBuf_X, *storeBuf_Y, *storeBuf_Z; //Dal main
+int16_t prev_acc[3]; //X [0]->Y [1]->Z [2]
 
 /**myGyrAcc_StructInit: INIZIALIZZAZIONE STRUTTURA
  *
@@ -56,8 +58,6 @@ void myGyrAcc_StructInit(MyGyrAcc_InitTypeDef *MyGyrAcc_InitStruct)
 void myAccBoard_Init(void)
 {
 	MyGyrAcc_InitTypeDef MyGyrAcc_InitStructure;
-
-	myI2C_Init(); //Bus I2C
 	//Inizializzo accelerometro alla frequenza di campionamento di 952 Hz
 	//banda filtro anti-aliasing: 408 Hz, giroscopio spento
 	myGyrAcc_StructInit(&MyGyrAcc_InitStructure);
@@ -71,12 +71,10 @@ void myAccBoard_Init(void)
 
 void myGyrAcc_Init(MyGyrAcc_InitTypeDef *MyGyrAcc_InitStruct)
 {
-	GPIO_InitTypeDef pb5Init;
 
-	EXTI_InitTypeDef EXTIInit;
-
-	NVIC_InitTypeDef NVICInit;
-
+	prev_acc[0] = 0;
+	prev_acc[1] = 0;
+	prev_acc[2] = 0;
 	uint8_t maskReg = 0x00;
 	uint8_t maskReg1 = 0x00;
 	//myI2C_Init();
@@ -87,51 +85,26 @@ void myGyrAcc_Init(MyGyrAcc_InitTypeDef *MyGyrAcc_InitStruct)
 	maskReg1 = (uint8_t) (MyGyrAcc_InitStruct->MyAccOutput_DataRate | MyGyrAcc_InitStruct->MyAccFull_Scale | \
 			              MyGyrAcc_InitStruct->MyAcc_Bandwith_Sel | MyGyrAcc_InitStruct->My_Acc_AntiAliasingBwSel);
 
-	//Abilita il pin DRDY(CN9->5->PB5) e le relative interruzioni
-	GPIO_StructInit(&pb5Init); //Default come input
-	pb5Init.GPIO_Pin = GPIO_Pin_5;
-	GPIO_Init(GPIOB,&pb5Init);
-
-	//Configura SYSCFG
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG,ENABLE);
-	SYSCFG_EXTILineConfig(EXTI_PortSourceGPIOB,EXTI_PinSource5);
-
-	//Configura EXTI
-	EXTIInit.EXTI_Line = EXTI_Line5;
-	EXTIInit.EXTI_LineCmd = ENABLE;
-	EXTIInit.EXTI_Mode = EXTI_Mode_Interrupt;
-	EXTIInit.EXTI_Trigger = EXTI_Trigger_Rising;
-	EXTI_Init(&EXTIInit);
-
-	//Configura NVIC
-	NVICInit.NVIC_IRQChannel = EXTI9_5_IRQn;
-	NVICInit.NVIC_IRQChannelPreemptionPriority = 0;
-	NVICInit.NVIC_IRQChannelSubPriority = 1;
-	NVICInit.NVIC_IRQChannelCmd = ENABLE;
-	NVIC_Init(&NVICInit);
-
-	myI2C_WriteReg(CHIP_ADDR, CTRL_REG1_G_ADDR , maskReg);
-	myI2C_WriteReg(CHIP_ADDR, CTRL_REG6_XL_ADDR, maskReg1);
+	HAL_I2C_Mem_Write(&hi2c1,CHIP_ADDR,CTRL_REG1_G_ADDR, 1, &maskReg,I2C_MEMADD_SIZE_8BIT,100);
+	HAL_I2C_Mem_Write(&hi2c1,CHIP_ADDR,CTRL_REG6_XL_ADDR, 1, &maskReg1,I2C_MEMADD_SIZE_8BIT,100);
 	//Interruzioni per Acc
-	myI2C_WriteReg(CHIP_ADDR,INT_CTRL_ADDR, 0b00000001);
+	uint8_t c = 0x01;
+	HAL_I2C_Mem_Write(&hi2c1,CHIP_ADDR,INT_CTRL_ADDR, 1, &c,I2C_MEMADD_SIZE_8BIT,100);
 
-	EXTI_GenerateSWInterrupt(EXTI_Line5);
+	//Linea5
+	__HAL_GPIO_EXTI_GENERATE_SWIT(EXTI_SWIER_SWIER5);
 }
 
 /*
  * Routine di gestione delle interruzioni provenienti dall'accelerometro
  */
-void EXTI9_5_IRQHandler(void)
+void myAcc_Handler(void)
 {
-	if(EXTI_GetITStatus(EXTI_Line5) == SET) //Acc Gyr
-	{
 		//printf("Interrupt %d\n", cont);
-		s16 acc[3]; //X [0]->Y [1]->Z [2]
 
-		//Leggi tutti gli assi dell'accelerometro
-		//A prescindere che ci sia lo spazio o meno!
-		//Il clear dell'interruzione deve sempre avvenire
-		myI2C_MultipleReadReg(CHIP_ADDR,0x28,(uint8_t *)&acc,6,1);
+
+
+
 
 		if(cont==n_C)
 		{
@@ -140,14 +113,16 @@ void EXTI9_5_IRQHandler(void)
 		else
 		{
 			//Salvo i campioni che via via si vanno presentando
-			storeBuf_X[cont] = ((((float)acc[0])*LINEAR_ACC_SENSE1)/1000)*GRAVITY_ACC;
-			storeBuf_Y[cont] = ((((float)acc[1])*LINEAR_ACC_SENSE1)/1000)*GRAVITY_ACC;
-			storeBuf_Z[cont] = ((((float)acc[2])*LINEAR_ACC_SENSE1)/1000)*GRAVITY_ACC;
+			storeBuf_X[cont] = ((((float)prev_acc[0])*LINEAR_ACC_SENSE1)/1000)*GRAVITY_ACC;
+			storeBuf_Y[cont] = ((((float)prev_acc[1])*LINEAR_ACC_SENSE1)/1000)*GRAVITY_ACC;
+			storeBuf_Z[cont] = ((((float)prev_acc[2])*LINEAR_ACC_SENSE1)/1000)*GRAVITY_ACC;
 			cont++;
 		}
 
-		//GYR_ACC_newValues = SET;
+		//Leggi tutti gli assi dell'accelerometro
+		//A prescindere che ci sia lo spazio o meno!
+		//Il clear dell'interruzione deve sempre avvenire
+		//Non-blocking mode!
+		HAL_I2C_Mem_Read_IT(&hi2c1,CHIP_ADDR,0x28,I2C_MEMADD_SIZE_8BIT,(uint8_t*)&prev_acc,6);
 
-		EXTI_ClearITPendingBit(EXTI_Line5);
-	}
 }

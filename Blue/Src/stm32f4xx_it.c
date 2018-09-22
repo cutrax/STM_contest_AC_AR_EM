@@ -34,7 +34,9 @@
 #include "stm32f4xx_hal.h"
 #include "stm32f4xx.h"
 #include "stm32f4xx_it.h"
+#include "stm32f4_nucleo_f401re.h"
 
+#include "Accelerometro.h"
 /* USER CODE BEGIN 0 */
 
 /* USER CODE END 0 */
@@ -214,7 +216,7 @@ void EXTI0_IRQHandler(void)
 void EXTI9_5_IRQHandler(void)
 {
   /* USER CODE BEGIN EXTI9_5_IRQn 0 */
-
+	myAcc_Handler();
   /* USER CODE END EXTI9_5_IRQn 0 */
   HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_5);
   /* USER CODE BEGIN EXTI9_5_IRQn 1 */

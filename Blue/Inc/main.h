@@ -58,6 +58,7 @@
 /* USER CODE END Includes */
 
 /* Private define ------------------------------------------------------------*/
+typedef enum {ATTESA = 0, SWAP, FFT} states_t;
 
 #define B1_Pin GPIO_PIN_13
 #define B1_GPIO_Port GPIOC

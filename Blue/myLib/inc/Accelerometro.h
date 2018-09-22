@@ -7,8 +7,10 @@
 
 #ifndef MYLIB_INC_ACCELEROMETRO_H_
 #define MYLIB_INC_ACCELEROMETRO_H_
+#include <stdint.h>
 
-#include "myLib.h"
+void myAcc_Handler(void);
+
 
 //ACCELERAZIONE DI GRAVITA' (in m/s^2)
 #define GRAVITY_ACC                                 (9.81)
