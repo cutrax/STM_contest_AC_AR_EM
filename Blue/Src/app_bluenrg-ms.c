@@ -216,12 +216,7 @@ void MX_X_CUBE_BLE1_Process(void)
   /* USER CODE END X_CUBE_BLE1_Process_PostTreatment */
 }
 
-/**
- * @brief  Initialize User process.
- *
- * @param  None
- * @retval None
- */
+
 static void User_Init(void)
 {
   BSP_PB_Init(BUTTON_KEY, BUTTON_MODE_GPIO);

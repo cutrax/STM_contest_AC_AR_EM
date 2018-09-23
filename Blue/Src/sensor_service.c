@@ -83,13 +83,18 @@ do {\
 #define COPY_ACC_UUID(uuid_struct)          COPY_UUID_128(uuid_struct,0x34,0x0a,0x1b,0x80, 0xcf,0x4b, 0x11,0xe1, 0xac,0x36, 0x00,0x02,0xa5,0xd5,0xc5,0x1b)
 
 #define COPY_ENV_SENS_SERVICE_UUID(uuid_struct)  COPY_UUID_128(uuid_struct,0x42,0x82,0x1a,0x40, 0xe4,0x77, 0x11,0xe2, 0x82,0xd0, 0x00,0x02,0xa5,0xd5,0xc5,0x1b)
+
+/*
 #define COPY_TEMP_CHAR_UUID(uuid_struct)         COPY_UUID_128(uuid_struct,0xa3,0x2e,0x55,0x20, 0xe4,0x77, 0x11,0xe2, 0xa9,0xe3, 0x00,0x02,0xa5,0xd5,0xc5,0x1b)
 #define COPY_PRESS_CHAR_UUID(uuid_struct)        COPY_UUID_128(uuid_struct,0xcd,0x20,0xc4,0x80, 0xe4,0x8b, 0x11,0xe2, 0x84,0x0b, 0x00,0x02,0xa5,0xd5,0xc5,0x1b)
 #define COPY_HUMIDITY_CHAR_UUID(uuid_struct)     COPY_UUID_128(uuid_struct,0x01,0xc5,0x0b,0x60, 0xe4,0x8c, 0x11,0xe2, 0xa0,0x73, 0x00,0x02,0xa5,0xd5,0xc5,0x1b)
+*/
 
 /* Store Value into a buffer in Little Endian Format */
+
 #define STORE_LE_16(buf, val)    ( ((buf)[0] =  (uint8_t) (val)    ) , \
                                    ((buf)[1] =  (uint8_t) (val>>8) ) )
+
 /**
  * @}
  */
@@ -189,13 +194,15 @@ tBleStatus Acc_Update(AxesRaw_t *data)
  * @param  None
  * @retval Status
  */
+
+
 tBleStatus Add_Environmental_Sensor_Service(void)
 {
   tBleStatus ret;
   uint8_t uuid[16];
-  uint16_t uuid16;
-  charactFormat charFormat;
-  uint16_t descHandle;
+  //uint16_t uuid16;
+  //charactFormat charFormat;
+  //uint16_t descHandle;
   
   COPY_ENV_SENS_SERVICE_UUID(uuid);
   ret = aci_gatt_add_serv(UUID_TYPE_128,  uuid, PRIMARY_SERVICE, 10,
@@ -203,7 +210,8 @@ tBleStatus Add_Environmental_Sensor_Service(void)
   if (ret != BLE_STATUS_SUCCESS) goto fail;
   
   /* Temperature Characteristic */
-  COPY_TEMP_CHAR_UUID(uuid);  
+
+  /*COPY_TEMP_CHAR_UUID(uuid);
   ret =  aci_gatt_add_char(envSensServHandle, UUID_TYPE_128, uuid, 2,
                            CHAR_PROP_READ, ATTR_PERMISSION_NONE,
                            GATT_NOTIFY_READ_REQ_AND_WAIT_FOR_APPL_RESP,
@@ -232,8 +240,9 @@ tBleStatus Add_Environmental_Sensor_Service(void)
                                FALSE,
                                &descHandle);
   if (ret != BLE_STATUS_SUCCESS) goto fail;
-  
+*/
   /* Pressure Characteristic */
+/*
   if(1){ //FIXME
     COPY_PRESS_CHAR_UUID(uuid);  
     ret =  aci_gatt_add_char(envSensServHandle, UUID_TYPE_128, uuid, 3,
@@ -265,7 +274,8 @@ tBleStatus Add_Environmental_Sensor_Service(void)
                                  &descHandle);
     if (ret != BLE_STATUS_SUCCESS) goto fail;
   }    
-  /* Humidity Characteristic */
+
+  // Humidity Characteristic
   if(1){   //FIXME
     COPY_HUMIDITY_CHAR_UUID(uuid);  
     ret =  aci_gatt_add_char(envSensServHandle, UUID_TYPE_128, uuid, 2,
@@ -299,18 +309,20 @@ tBleStatus Add_Environmental_Sensor_Service(void)
   } 
   PRINTF("Service ENV_SENS added. Handle 0x%04X, TEMP Charac handle: 0x%04X, PRESS Charac handle: 0x%04X, HUMID Charac handle: 0x%04X\n",envSensServHandle, tempCharHandle, pressCharHandle, humidityCharHandle);	
   return BLE_STATUS_SUCCESS; 
-  
+  */
 fail:
   PRINTF("Error while adding ENV_SENS service.\n");
   return BLE_STATUS_ERROR ;
   
 }
 
+
 /**
  * @brief  Update temperature characteristic value.
  * @param  Temperature in tenths of degree 
  * @retval Status
  */
+/*
 tBleStatus Temp_Update(int16_t temp)
 {  
   tBleStatus ret;
@@ -325,12 +337,15 @@ tBleStatus Temp_Update(int16_t temp)
   return BLE_STATUS_SUCCESS;
 	
 }
+*/
 
 /**
  * @brief  Update pressure characteristic value.
  * @param  int32_t Pressure in mbar 
  * @retval tBleStatus Status
  */
+
+/*
 tBleStatus Press_Update(int32_t press)
 {  
   tBleStatus ret;
@@ -345,12 +360,15 @@ tBleStatus Press_Update(int32_t press)
   return BLE_STATUS_SUCCESS;
 	
 }
+*/
 
 /**
  * @brief  Update humidity characteristic value.
  * @param  uint16_thumidity RH (Relative Humidity) in thenths of %
  * @retval tBleStatus      Status
  */
+
+/*
 tBleStatus Humidity_Update(uint16_t humidity)
 {  
   tBleStatus ret;
@@ -365,6 +383,8 @@ tBleStatus Humidity_Update(uint16_t humidity)
   return BLE_STATUS_SUCCESS;
   
 }
+
+*/
 
 /**
  * @brief  Puts the device in connectable mode.
@@ -446,14 +466,15 @@ void Read_Request_CB(uint16_t handle)
     Acc_Update((AxesRaw_t*)&axes_data);
   }  
   else if(handle == tempCharHandle + 1){
-    int16_t data;
-    data = 270 + ((uint64_t)rand()*15)/RAND_MAX; //sensor emulation        
+   // int16_t data;
+    //data = 270 + ((uint64_t)rand()*15)/RAND_MAX; //sensor emulation
     Acc_Update((AxesRaw_t*)&axes_data); //FIXME: to overcome issue on Android App
                                         // If the user button is not pressed within
                                         // a short time after the connection,
                                         // a pop-up reports a "No valid characteristics found" error.
-    Temp_Update(data);
+    //Temp_Update(data);
   }
+  /*
   else if(handle == pressCharHandle + 1){
     int32_t data;
 
@@ -467,7 +488,8 @@ void Read_Request_CB(uint16_t handle)
     data = 450 + ((uint64_t)rand()*100)/RAND_MAX;
     
     Humidity_Update(data);
-  }  
+  }
+  */
 
   if(connection_handle != 0)
     aci_gatt_allow_read(connection_handle);
