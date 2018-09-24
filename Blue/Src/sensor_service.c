@@ -282,7 +282,7 @@ tBleStatus Add_Environmental_Sensor_Service(void)
   //charactFormat charFormat;
   //uint16_t descHandle;
   
-  /*COPY_ENV_SENS_SERVICE_UUID(uuid);
+  //COPY_ENV_SENS_SERVICE_UUID(uuid);
   ret = aci_gatt_add_serv(UUID_TYPE_128,  uuid, PRIMARY_SERVICE, 10,
                           &envSensServHandle);
   if (ret != BLE_STATUS_SUCCESS) goto fail;

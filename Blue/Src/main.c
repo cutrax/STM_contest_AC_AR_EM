@@ -163,7 +163,7 @@ int main(void)
 			{
 				//Spurga il sensore in crash
 				myAcc_Handler();
-				printf("Sensore sbloccato: %d\r\n",HAL_GetTick() - savedTick);
+				printf("Sensore sbloccato: %d\r\n",(uint16_t)(HAL_GetTick() - savedTick));
 				savedTick = HAL_GetTick();
 
 			}
@@ -237,29 +237,29 @@ int main(void)
 			      ffty1_6, ffty7_12, ffty13_18, ffty19_24, ffty25_30,
 				  fftz1_6, fftz7_12, fftz13_18, fftz19_24, fftz25_30;
 
-			fft_t* i_frequency;
+			fft_t i_frequency;
 
 
 
 			for(int j=0; j<=30; j++)
 			{
-				if(j<=6) { fftx1_6 += fft_X[j].re*fft_X[j].re + fft_X[j].im*fft_Y[j].im;
+				if(j<=6) { fftx1_6 += fft_X[j].re*fft_X[j].re + fft_X[j].im*fft_X[j].im;
 				           ffty1_6 += fft_Y[j].re*fft_Y[j].re + fft_Y[j].im*fft_Y[j].im;
 				           fftz1_6 += fft_Z[j].re*fft_Z[j].re + fft_Z[j].im*fft_Z[j].im;}
 
-				if(j<=12) { fftx7_12 += fft_X[j].re*fft_X[j].re + fft_X[j].im*fft_Y[j].im;
+				if(j<=12) { fftx7_12 += fft_X[j].re*fft_X[j].re + fft_X[j].im*fft_X[j].im;
 				            ffty7_12 += fft_Y[j].re*fft_Y[j].re + fft_Y[j].im*fft_Y[j].im;
 				            fftz7_12 += fft_Z[j].re*fft_Z[j].re + fft_Z[j].im*fft_Z[j].im;}
 
-				if(j<=18) { fftx13_18 += fft_X[j].re*fft_X[j].re + fft_X[j].im*fft_Y[j].im;
+				if(j<=18) { fftx13_18 += fft_X[j].re*fft_X[j].re + fft_X[j].im*fft_X[j].im;
 				            ffty13_18 += fft_Y[j].re*fft_Y[j].re + fft_Y[j].im*fft_Y[j].im;
 				            fftz13_18 += fft_Z[j].re*fft_Z[j].re + fft_Z[j].im*fft_Z[j].im;}
 
-				if(j<=24) { fftx19_24 += fft_X[j].re*fft_X[j].re + fft_X[j].im*fft_Y[j].im;
+				if(j<=24) { fftx19_24 += fft_X[j].re*fft_X[j].re + fft_X[j].im*fft_X[j].im;
 				            ffty19_24 += fft_Y[j].re*fft_Y[j].re + fft_Y[j].im*fft_Y[j].im;
 				            fftz19_24 += fft_Z[j].re*fft_Z[j].re + fft_Z[j].im*fft_Z[j].im;}
 
-				if(j<=30) { fftx25_30 += fft_X[j].re*fft_X[j].re + fft_X[j].im*fft_Y[j].im;
+				if(j<=30) { fftx25_30 += fft_X[j].re*fft_X[j].re + fft_X[j].im*fft_X[j].im;
 				            ffty25_30 += fft_Y[j].re*fft_Y[j].re + fft_Y[j].im*fft_Y[j].im;
 				            fftz25_30 += fft_Z[j].re*fft_Z[j].re + fft_Z[j].im*fft_Z[j].im;}
 			}
@@ -287,7 +287,7 @@ int main(void)
 			i_frequency.FREQUENCY7_12 = sqrtf((fftx7_12*fftx7_12) + (ffty7_12*ffty7_12) + (fftz7_12*fftz7_12));
 			i_frequency.FREQUENCY13_18 = sqrtf((fftx13_18*fftx13_18) + (ffty13_18*ffty13_18) + (fftz13_18*fftz13_18));
 			i_frequency.FREQUENCY19_24 = sqrtf((fftx19_24*fftx19_24) + (ffty19_24*ffty19_24) + (fftz19_24*fftz19_24));
-			i_frequency->FREQUENCY25_30 = sqrtf((fftx25_30*fftx25_30) + (ffty25_30)*(ffty25_30) + (fftz25_30*fftz25_30));
+			i_frequency.FREQUENCY25_30 = sqrtf((fftx25_30*fftx25_30) + (ffty25_30)*(ffty25_30) + (fftz25_30*fftz25_30));
 
 
 
@@ -385,10 +385,10 @@ int main(void)
 			//printf("a8[%d] = %f\r\n", windowCont, a8[windowCont]);
 			if(connected){
 				Acc_Update(a8[windowCont]);
-				FFT_Update(i_frequency);
+				FFT_Update(&i_frequency);
 			}
 
-			printf("exec_time:%d\r\n",HAL_GetTick()- savedTick);
+			printf("exec_time:%d\r\n",(uint16_t)(HAL_GetTick()- savedTick));
 			statoCorrente = ATTESA;
 			break;
 		}
