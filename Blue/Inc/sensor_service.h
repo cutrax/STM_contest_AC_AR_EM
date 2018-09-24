@@ -90,6 +90,15 @@ typedef struct {
   i32_t AXIS_Y;
   i32_t AXIS_Z;
 } AxesRaw_t;
+
+typedef struct {
+
+	float FREQUENCY1_6;
+	float FREQUENCY7_12;
+	float FREQUENCY13_18;
+	float FREQUENCY19_24;
+	float FREQUENCY25_30;
+} fft_t;
 /**
  * @}
  */
@@ -97,6 +106,8 @@ typedef struct {
 /** @addtogroup SENSOR_SERVICE_Exported_Functions
  *  @{
  */
+tBleStatus FFT_Update(fft_t* fft_data);
+tBleStatus Add_FFT_Service(void);
 tBleStatus Add_Acc_Service(void);
 tBleStatus Acc_Update(float a8);
 tBleStatus Add_Environmental_Sensor_Service(void);

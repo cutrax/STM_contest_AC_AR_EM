@@ -184,6 +184,7 @@ void MX_X_CUBE_BLE1_Init(void)
   else
     PRINTF("Error while adding Acc service.\n");
   
+
   /*ret = Add_Environmental_Sensor_Service();
   
   if (ret == BLE_STATUS_SUCCESS)
