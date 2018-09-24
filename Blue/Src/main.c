@@ -56,7 +56,7 @@
 #include "Accelerometro.h"
 #include "fft.h"
 #include "Elaborazioni.h"
-
+#include "sensor_service.h"
 #include <arm_math.h>
 #include <arm_const_structs.h>
 /* USER CODE END Includes */
@@ -79,6 +79,8 @@ arm_rfft_fast_instance_f32 S;  //Struttura di configurazione di RFFT
 
 uint8_t windowCont;
 float a8[60];
+
+volatile int     connected;
 
 float rotMat[3][3];
 /* USER CODE BEGIN PV */
@@ -199,6 +201,7 @@ int main(void)
 				}
 				a8t = sqrtf(a8t);
 				printf("a8 per 60 secondi: %f\r\n",a8t);
+
 			}
 			else{
 				++windowCont;
@@ -310,8 +313,8 @@ int main(void)
 
 			//Calcolo degli a(8)
 		   a8[windowCont] = maxRmsValue(rmsX, rmsY, rmsZ)*scala_T;
-			printf("a8[%d] = %f\r\n", windowCont, a8[windowCont]);
-
+			//printf("a8[%d] = %f\r\n", windowCont, a8[windowCont]);
+			if(connected) Acc_Update(a8[windowCont]);
 			statoCorrente = ATTESA;
 			break;
 		}

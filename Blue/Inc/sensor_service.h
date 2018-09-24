@@ -98,7 +98,7 @@ typedef struct {
  *  @{
  */
 tBleStatus Add_Acc_Service(void);
-tBleStatus Acc_Update(AxesRaw_t *data);
+tBleStatus Acc_Update(float a8);
 tBleStatus Add_Environmental_Sensor_Service(void);
 tBleStatus Free_Fall_Notify(void);
 tBleStatus Temp_Update(int16_t temp);

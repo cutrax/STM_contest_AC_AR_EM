@@ -123,6 +123,6 @@ void myAcc_Handler(void)
 		//A prescindere che ci sia lo spazio o meno!
 		//Il clear dell'interruzione deve sempre avvenire
 		//Non-blocking mode!
-		HAL_I2C_Mem_Read_IT(&hi2c1,CHIP_ADDR,0x28,I2C_MEMADD_SIZE_8BIT,(uint8_t*)&prev_acc,6);
+		HAL_I2C_Mem_Read(&hi2c1,CHIP_ADDR,0x28,I2C_MEMADD_SIZE_8BIT,(uint8_t*)&prev_acc,6,7000);
 
 }

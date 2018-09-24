@@ -184,13 +184,13 @@ void MX_X_CUBE_BLE1_Init(void)
   else
     PRINTF("Error while adding Acc service.\n");
   
-  ret = Add_Environmental_Sensor_Service();
+  /*ret = Add_Environmental_Sensor_Service();
   
   if (ret == BLE_STATUS_SUCCESS)
     PRINTF("Environmental Sensor service added successfully.\n");
   else
     PRINTF("Error while adding Environmental Sensor service.\n");
-
+*/
   /* Set output power level */
   ret = aci_hal_set_tx_power_level(1,4);
   
@@ -242,7 +242,7 @@ static void User_Process(AxesRaw_t* p_axes)
   }  
 
   /* Check if the user has pushed the button */    
-  if (BSP_PB_GetState(BUTTON_KEY) == !user_button_init_state) 
+  /*if (BSP_PB_GetState(BUTTON_KEY) == !user_button_init_state)
   {
     while (BSP_PB_GetState(BUTTON_KEY) == !user_button_init_state); 
     
@@ -250,13 +250,13 @@ static void User_Process(AxesRaw_t* p_axes)
     
     if (connected)
     {
-      /* Update acceleration data */
+      // Update acceleration data
       p_axes->AXIS_X += 100;
       p_axes->AXIS_Y += 100;
       p_axes->AXIS_Z += 100;
       Acc_Update(p_axes);
     }
-  } 
+  } */
 }
 
 #ifdef __cplusplus

@@ -59,6 +59,7 @@ __IO uint8_t set_connectable = 1;
 __IO uint16_t connection_handle = 0;
 __IO uint8_t notification_enabled = FALSE;
 __IO AxesRaw_t axes_data = {0, 0, 0};
+__IO float a8_data = 0;
 uint16_t sampleServHandle, TXCharHandle, RXCharHandle;
 uint16_t accServHandle, freeFallCharHandle, accCharHandle;
 uint16_t envSensServHandle, tempCharHandle, pressCharHandle, humidityCharHandle;
@@ -126,7 +127,7 @@ tBleStatus Add_Acc_Service(void)
   if (ret != BLE_STATUS_SUCCESS) goto fail;
   
   COPY_ACC_UUID(uuid);  
-  ret =  aci_gatt_add_char(accServHandle, UUID_TYPE_128, uuid, 6,
+  ret =  aci_gatt_add_char(accServHandle, UUID_TYPE_128, uuid, 4,
                            CHAR_PROP_NOTIFY|CHAR_PROP_READ,
                            ATTR_PERMISSION_NONE,
                            GATT_NOTIFY_READ_REQ_AND_WAIT_FOR_APPL_RESP,
@@ -170,16 +171,18 @@ tBleStatus Free_Fall_Notify(void)
  * @param  Structure containing acceleration value in mg
  * @retval Status
  */
-tBleStatus Acc_Update(AxesRaw_t *data)
+tBleStatus Acc_Update(float a8)
 {  
   tBleStatus ret;    
-  uint8_t buff[6];
-    
-  STORE_LE_16(buff,data->AXIS_X);
-  STORE_LE_16(buff+2,data->AXIS_Y);
-  STORE_LE_16(buff+4,data->AXIS_Z);
-	
-  ret = aci_gatt_update_char_value(accServHandle, accCharHandle, 0, 6, buff);
+  uint8_t buff[4];
+//  STORE_LE_16(buff,data->AXIS_X);
+//  STORE_LE_16(buff+2,data->AXIS_Y);
+//  STORE_LE_16(buff+4,data->AXIS_Z);
+  buff[0] = ((uint8_t *)&a8)[0];
+  buff[1] = ((uint8_t *)&a8)[1];
+  buff[2] = ((uint8_t *)&a8)[2];
+  buff[3] = ((uint8_t *)&a8)[3];
+  ret = aci_gatt_update_char_value(accServHandle, accCharHandle, 0, 4,(uint8_t*) &buff);
 	
   if (ret != BLE_STATUS_SUCCESS){
     PRINTF("Error while updating ACC characteristic.\n") ;
@@ -416,8 +419,8 @@ void setConnectable(void)
   hci_le_set_scan_resp_data(0,NULL);
   PRINTF("General Discoverable Mode.\n");
   
-  ret = aci_gap_set_discoverable(ADV_IND, 0, 0, PUBLIC_ADDR, NO_WHITE_LIST_USE,
-                                 sizeof(local_name), local_name, 0, NULL, 0, 0);
+  ret = aci_gap_set_discoverable(ADV_IND, 32, 40, PUBLIC_ADDR, NO_WHITE_LIST_USE,
+                                 sizeof(local_name), local_name, 0, NULL, 10, 10);
   if (ret != BLE_STATUS_SUCCESS) {
     PRINTF("Error while setting discoverable mode (%d)\n", ret);    
   }  
@@ -463,12 +466,14 @@ void GAP_DisconnectionComplete_CB(void)
 void Read_Request_CB(uint16_t handle)
 {  
   if(handle == accCharHandle + 1){
-    Acc_Update((AxesRaw_t*)&axes_data);
+    //Acc_Update((AxesRaw_t*)&axes_data);
+	  Acc_Update(a8_data);
   }  
   else if(handle == tempCharHandle + 1){
    // int16_t data;
     //data = 270 + ((uint64_t)rand()*15)/RAND_MAX; //sensor emulation
-    Acc_Update((AxesRaw_t*)&axes_data); //FIXME: to overcome issue on Android App
+    //Acc_Update((AxesRaw_t*)&axes_data); //FIXME: to overcome issue on Android App
+
                                         // If the user button is not pressed within
                                         // a short time after the connection,
                                         // a pop-up reports a "No valid characteristics found" error.
