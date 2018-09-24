@@ -80,7 +80,9 @@ arm_rfft_fast_instance_f32 S;  //Struttura di configurazione di RFFT
 uint8_t windowCont;
 float a8[60];
 
-volatile int     connected;
+volatile int connected;
+
+uint32_t savedTick;
 
 float rotMat[3][3];
 /* USER CODE BEGIN PV */
@@ -155,8 +157,16 @@ int main(void)
 		{
 			if(cont == n_C){
 			   statoCorrente = SWAP;
+			   savedTick = HAL_GetTick();
 			}
+			if(HAL_GetTick() - savedTick > 2000)
+			{
+				//Spurga il sensore in crash
+				myAcc_Handler();
+				printf("Sensore sbloccato: %d\r\n",HAL_GetTick() - savedTick);
+				savedTick = HAL_GetTick();
 
+			}
 			break;
 		}
 
@@ -261,7 +271,7 @@ int main(void)
 			rotazione_Z(rotMat, fft_X, fft_Y, fft_Z, workingBuf_Z_cplx);
 			//printf("Fine Rotazione\r\n");
 
-			printf("X:%f, Y:%f, Z:%f\r\n", workingBuf_X_cplx[0].re, workingBuf_Y_cplx[0].re, workingBuf_Z_cplx[0].re);
+			//printf("X:%f, Y:%f, Z:%f\r\n", workingBuf_X_cplx[0].re, workingBuf_Y_cplx[0].re, workingBuf_Z_cplx[0].re);
 
 			//Azzero la gravità
 			workingBuf_Z_cplx[0].re = 0;
@@ -315,6 +325,7 @@ int main(void)
 		   a8[windowCont] = maxRmsValue(rmsX, rmsY, rmsZ)*scala_T;
 			//printf("a8[%d] = %f\r\n", windowCont, a8[windowCont]);
 			if(connected) Acc_Update(a8[windowCont]);
+			printf("exec_time:%d\r\n",HAL_GetTick()- savedTick);
 			statoCorrente = ATTESA;
 			break;
 		}
@@ -446,13 +457,13 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(ACC_DRDY_GPIO_Port, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
-  HAL_NVIC_SetPriority(EXTI0_IRQn, 0, 3);
+  HAL_NVIC_SetPriority(EXTI0_IRQn, 0, 1);
   HAL_NVIC_EnableIRQ(EXTI0_IRQn);
 
   HAL_NVIC_SetPriority(EXTI9_5_IRQn, 0, 2);
   HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
 
-  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 4);
+  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 3);
   HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 
 }

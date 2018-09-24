@@ -265,7 +265,7 @@ void hci_tl_lowlevel_init(void)
   /* Register event irq handler */
   HAL_EXTI_GetHandle(&hexti0, EXTI_LINE_0);
   HAL_EXTI_RegisterCallback(&hexti0, HAL_EXTI_COMMON_CB_ID, hci_tl_lowlevel_isr);
-  HAL_NVIC_SetPriority(EXTI0_IRQn, 0, 3);
+  HAL_NVIC_SetPriority(EXTI0_IRQn, 0, 1);
   HAL_NVIC_EnableIRQ(EXTI0_IRQn);
 #endif /* HCI_TL */  
 
