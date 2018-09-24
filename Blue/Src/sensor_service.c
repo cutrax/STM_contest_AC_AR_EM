@@ -63,6 +63,7 @@ __IO float a8_data = 0;
 uint16_t sampleServHandle, TXCharHandle, RXCharHandle;
 uint16_t accServHandle, freeFallCharHandle, accCharHandle;
 uint16_t envSensServHandle, tempCharHandle, pressCharHandle, humidityCharHandle;
+uint16_t fftServHandle, fftCharHandle;
 /**
  * @}
  */
@@ -83,13 +84,16 @@ do {\
 #define COPY_FREE_FALL_UUID(uuid_struct)    COPY_UUID_128(uuid_struct,0xe2,0x3e,0x78,0xa0, 0xcf,0x4a, 0x11,0xe1, 0x8f,0xfc, 0x00,0x02,0xa5,0xd5,0xc5,0x1b)
 #define COPY_ACC_UUID(uuid_struct)          COPY_UUID_128(uuid_struct,0x34,0x0a,0x1b,0x80, 0xcf,0x4b, 0x11,0xe1, 0xac,0x36, 0x00,0x02,0xa5,0xd5,0xc5,0x1b)
 
-#define COPY_ENV_SENS_SERVICE_UUID(uuid_struct)  COPY_UUID_128(uuid_struct,0x42,0x82,0x1a,0x40, 0xe4,0x77, 0x11,0xe2, 0x82,0xd0, 0x00,0x02,0xa5,0xd5,0xc5,0x1b)
+//#define COPY_ENV_SENS_SERVICE_UUID(uuid_struct)  COPY_UUID_128(uuid_struct,0x42,0x82,0x1a,0x40, 0xe4,0x77, 0x11,0xe2, 0x82,0xd0, 0x00,0x02,0xa5,0xd5,0xc5,0x1b)
 
-/*
-#define COPY_TEMP_CHAR_UUID(uuid_struct)         COPY_UUID_128(uuid_struct,0xa3,0x2e,0x55,0x20, 0xe4,0x77, 0x11,0xe2, 0xa9,0xe3, 0x00,0x02,0xa5,0xd5,0xc5,0x1b)
-#define COPY_PRESS_CHAR_UUID(uuid_struct)        COPY_UUID_128(uuid_struct,0xcd,0x20,0xc4,0x80, 0xe4,0x8b, 0x11,0xe2, 0x84,0x0b, 0x00,0x02,0xa5,0xd5,0xc5,0x1b)
-#define COPY_HUMIDITY_CHAR_UUID(uuid_struct)     COPY_UUID_128(uuid_struct,0x01,0xc5,0x0b,0x60, 0xe4,0x8c, 0x11,0xe2, 0xa0,0x73, 0x00,0x02,0xa5,0xd5,0xc5,0x1b)
-*/
+//Il seguente UUID è lo stesso di ENV_SENS_SERVICE_UUID
+#define COPY_FFT_SERVICE_UUID(uuid_struct)  COPY_UUID_128(uuid_struct,0x42,0x82,0x1a,0x40, 0xe4,0x77, 0x11,0xe2, 0x82,0xd0, 0x00,0x02,0xa5,0xd5,0xc5,0x1b)
+
+//#define COPY_TEMP_CHAR_UUID(uuid_struct)         COPY_UUID_128(uuid_struct,0xa3,0x2e,0x55,0x20, 0xe4,0x77, 0x11,0xe2, 0xa9,0xe3, 0x00,0x02,0xa5,0xd5,0xc5,0x1b)
+#define COPY_FFT_CHAR_UUID(uuid_struct)         COPY_UUID_128(uuid_struct,0xa3,0x2e,0x55,0x20, 0xe4,0x77, 0x11,0xe2, 0xa9,0xe3, 0x00,0x02,0xa5,0xd5,0xc5,0x1b)
+//#define COPY_PRESS_CHAR_UUID(uuid_struct)        COPY_UUID_128(uuid_struct,0xcd,0x20,0xc4,0x80, 0xe4,0x8b, 0x11,0xe2, 0x84,0x0b, 0x00,0x02,0xa5,0xd5,0xc5,0x1b)
+//#define COPY_HUMIDITY_CHAR_UUID(uuid_struct)     COPY_UUID_128(uuid_struct,0x01,0xc5,0x0b,0x60, 0xe4,0x8c, 0x11,0xe2, 0xa0,0x73, 0x00,0x02,0xa5,0xd5,0xc5,0x1b)
+
 
 /* Store Value into a buffer in Little Endian Format */
 
@@ -103,6 +107,36 @@ do {\
 /** @defgroup SENSOR_SERVICE_Exported_Functions 
  * @{
  */ 
+
+tBleStatus Add_FFT_Service(void)
+{
+	tBleStatus ret;
+	uint8_t uuid[16];
+
+	COPY_FFT_SERVICE_UUID(uuid);
+	ret= aci_gatt_add_serv(UUID_TYPE_128, uuid, PRIMARY_SERVICE, 20, &fftServHandle);
+
+	if (ret != BLE_STATUS_SUCCESS) goto fail;
+
+	COPY_FFT_CHAR_UUID(uuid);
+	ret= aci_gatt_add_char(fftServHandle, UUID_TYPE_128, uuid, 20,
+			               CHAR_PROP_NOTIFY|CHAR_PROP_READ,
+						   ATTR_PERMISSION_NONE,
+						   GATT_NOTIFY_READ_REQ_AND_WAIT_FOR_APPL_RESP,
+						   16, 0, &fftCharHandle);
+
+	if (ret != BLE_STATUS_SUCCESS) goto fail;
+
+	  PRINTF("Service ACC added. Handle 0x%04X, Free fall Charac handle: 0x%04X, Acc Charac handle: 0x%04X\n",accServHandle, freeFallCharHandle, accCharHandle);
+	  return BLE_STATUS_SUCCESS;
+
+	fail:
+	  PRINTF("Error while adding ACC service.\n");
+	  return BLE_STATUS_ERROR ;
+}
+
+
+
 /**
  * @brief  Add an accelerometer service using a vendor specific profile.
  *
@@ -165,6 +199,47 @@ tBleStatus Free_Fall_Notify(void)
   return BLE_STATUS_SUCCESS;	
 }
 
+tBleStatus FFT_Update(fft_t* fft_data)
+{
+	tBleStatus ret;
+	uint8_t buff[20];
+
+	buff[0] = ((uint8_t*)&fft_data->FREQUENCY1_6)[0];
+	buff[1] = ((uint8_t*)&fft_data->FREQUENCY1_6)[1];
+	buff[2] = ((uint8_t*)&fft_data->FREQUENCY1_6)[2];
+	buff[3] = ((uint8_t*)&fft_data->FREQUENCY1_6)[3];
+
+
+	buff[4] = ((uint8_t*)&fft_data->FREQUENCY7_12)[0];
+	buff[5] = ((uint8_t*)&fft_data->FREQUENCY7_12)[1];
+	buff[6] = ((uint8_t*)&fft_data->FREQUENCY7_12)[2];
+	buff[7] = ((uint8_t*)&fft_data->FREQUENCY7_12)[3];
+
+	buff[8] = ((uint8_t*)&fft_data->FREQUENCY13_18)[0];
+	buff[9] = ((uint8_t*)&fft_data->FREQUENCY13_18)[1];
+	buff[10] = ((uint8_t*)&fft_data->FREQUENCY13_18)[2];
+	buff[11] = ((uint8_t*)&fft_data->FREQUENCY13_18)[3];
+
+	buff[12] = ((uint8_t*)&fft_data->FREQUENCY19_24)[0];
+	buff[13] = ((uint8_t*)&fft_data->FREQUENCY19_24)[1];
+	buff[14] = ((uint8_t*)&fft_data->FREQUENCY19_24)[2];
+	buff[15] = ((uint8_t*)&fft_data->FREQUENCY19_24)[3];
+
+	buff[16] =((uint8_t*)&fft_data->FREQUENCY25_30)[0];
+	buff[17] = ((uint8_t*)&fft_data->FREQUENCY25_30)[1];
+	buff[18] = ((uint8_t*)&fft_data->FREQUENCY25_30)[2];
+	buff[19] = ((uint8_t*)&fft_data->FREQUENCY25_30)[3];
+
+	ret = aci_gatt_update_char_value(fftServHandle, fftCharHandle, 0, 20,(uint8_t*) &buff);
+
+	 if (ret != BLE_STATUS_SUCCESS){
+	    PRINTF("Error while updating ACC characteristic.\n") ;
+	    return BLE_STATUS_ERROR ;
+	  }
+	  return BLE_STATUS_SUCCESS;
+
+}
+
 /**
  * @brief  Update acceleration characteristic value.
  *
@@ -198,7 +273,7 @@ tBleStatus Acc_Update(float a8)
  * @retval Status
  */
 
-
+/*
 tBleStatus Add_Environmental_Sensor_Service(void)
 {
   tBleStatus ret;
@@ -207,11 +282,11 @@ tBleStatus Add_Environmental_Sensor_Service(void)
   //charactFormat charFormat;
   //uint16_t descHandle;
   
-  COPY_ENV_SENS_SERVICE_UUID(uuid);
+  /*COPY_ENV_SENS_SERVICE_UUID(uuid);
   ret = aci_gatt_add_serv(UUID_TYPE_128,  uuid, PRIMARY_SERVICE, 10,
                           &envSensServHandle);
   if (ret != BLE_STATUS_SUCCESS) goto fail;
-  
+  */
   /* Temperature Characteristic */
 
   /*COPY_TEMP_CHAR_UUID(uuid);
@@ -313,11 +388,12 @@ tBleStatus Add_Environmental_Sensor_Service(void)
   PRINTF("Service ENV_SENS added. Handle 0x%04X, TEMP Charac handle: 0x%04X, PRESS Charac handle: 0x%04X, HUMID Charac handle: 0x%04X\n",envSensServHandle, tempCharHandle, pressCharHandle, humidityCharHandle);	
   return BLE_STATUS_SUCCESS; 
   */
-fail:
+/*fail:
   PRINTF("Error while adding ENV_SENS service.\n");
   return BLE_STATUS_ERROR ;
   
 }
+*/
 
 
 /**

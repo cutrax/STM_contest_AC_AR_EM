@@ -324,7 +324,11 @@ int main(void)
 			//Calcolo degli a(8)
 		   a8[windowCont] = maxRmsValue(rmsX, rmsY, rmsZ)*scala_T;
 			//printf("a8[%d] = %f\r\n", windowCont, a8[windowCont]);
-			if(connected) Acc_Update(a8[windowCont]);
+			if(connected){
+				Acc_Update(a8[windowCont]);
+				FFT_Update(i_frequency);
+			}
+
 			printf("exec_time:%d\r\n",HAL_GetTick()- savedTick);
 			statoCorrente = ATTESA;
 			break;
