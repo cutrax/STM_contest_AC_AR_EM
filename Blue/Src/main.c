@@ -233,11 +233,12 @@ int main(void)
 			}
 
 			//Calcolo campioni da inviare all'app tramite BLE
-			float fftx1_6, fftx7_12, fftx13_18, fftx19_24, fftx25_30,
-			      ffty1_6, ffty7_12, ffty13_18, ffty19_24, ffty25_30,
-				  fftz1_6, fftz7_12, fftz13_18, fftz19_24, fftz25_30;
+			float fftx1_6=0;float fftx7_12=0;float fftx13_18=0;float fftx19_24=0;float fftx25_30=0;
+			float ffty1_6=0;float ffty7_12=0;float ffty13_18=0;float ffty19_24=0;float ffty25_30=0;
+			float fftz1_6=0;float fftz7_12=0;float fftz13_18=0;float fftz19_24=0;float fftz25_30=0;
 
-			fft_t i_frequency;
+
+			fft_t i_frequency = {0,0,0,0,0};
 
 
 
@@ -247,19 +248,19 @@ int main(void)
 				           ffty1_6 += fft_Y[j].re*fft_Y[j].re + fft_Y[j].im*fft_Y[j].im;
 				           fftz1_6 += fft_Z[j].re*fft_Z[j].re + fft_Z[j].im*fft_Z[j].im;}
 
-				if(j<=12) { fftx7_12 += fft_X[j].re*fft_X[j].re + fft_X[j].im*fft_X[j].im;
+				else if(j<=12) { fftx7_12 += fft_X[j].re*fft_X[j].re + fft_X[j].im*fft_X[j].im;
 				            ffty7_12 += fft_Y[j].re*fft_Y[j].re + fft_Y[j].im*fft_Y[j].im;
 				            fftz7_12 += fft_Z[j].re*fft_Z[j].re + fft_Z[j].im*fft_Z[j].im;}
 
-				if(j<=18) { fftx13_18 += fft_X[j].re*fft_X[j].re + fft_X[j].im*fft_X[j].im;
+				else if(j<=18) { fftx13_18 += fft_X[j].re*fft_X[j].re + fft_X[j].im*fft_X[j].im;
 				            ffty13_18 += fft_Y[j].re*fft_Y[j].re + fft_Y[j].im*fft_Y[j].im;
 				            fftz13_18 += fft_Z[j].re*fft_Z[j].re + fft_Z[j].im*fft_Z[j].im;}
 
-				if(j<=24) { fftx19_24 += fft_X[j].re*fft_X[j].re + fft_X[j].im*fft_X[j].im;
+				else if(j<=24) { fftx19_24 += fft_X[j].re*fft_X[j].re + fft_X[j].im*fft_X[j].im;
 				            ffty19_24 += fft_Y[j].re*fft_Y[j].re + fft_Y[j].im*fft_Y[j].im;
 				            fftz19_24 += fft_Z[j].re*fft_Z[j].re + fft_Z[j].im*fft_Z[j].im;}
 
-				if(j<=30) { fftx25_30 += fft_X[j].re*fft_X[j].re + fft_X[j].im*fft_X[j].im;
+				else if(j<=30) { fftx25_30 += fft_X[j].re*fft_X[j].re + fft_X[j].im*fft_X[j].im;
 				            ffty25_30 += fft_Y[j].re*fft_Y[j].re + fft_Y[j].im*fft_Y[j].im;
 				            fftz25_30 += fft_Z[j].re*fft_Z[j].re + fft_Z[j].im*fft_Z[j].im;}
 			}

@@ -91,7 +91,7 @@ void MX_X_CUBE_BLE1_Init(void)
   /* USER CODE END X_CUBE_BLE1_Init_PreTreatment */
 
   /* Initialize the peripherals and the BLE Stack */
-  const char *name = "BlueNRG";
+  const char *name = "SmartHelmet";
   uint8_t SERVER_BDADDR[] = {0x12, 0x34, 0x00, 0xE1, 0x80, 0x03};
   uint8_t bdaddr[BDADDR_SIZE];
   uint16_t service_handle, dev_name_char_handle, appearance_char_handle;
@@ -145,7 +145,7 @@ void MX_X_CUBE_BLE1_Init(void)
   }
 
   if (bnrg_expansion_board == IDB05A1) {
-    ret = aci_gap_init_IDB05A1(GAP_PERIPHERAL_ROLE_IDB05A1, 0, 0x07, &service_handle, &dev_name_char_handle, &appearance_char_handle);
+    ret = aci_gap_init_IDB05A1(GAP_PERIPHERAL_ROLE_IDB05A1, 0, 0x11, &service_handle, &dev_name_char_handle, &appearance_char_handle);
   }
   else {
     ret = aci_gap_init_IDB04A1(GAP_PERIPHERAL_ROLE_IDB04A1, &service_handle, &dev_name_char_handle, &appearance_char_handle);
@@ -184,6 +184,12 @@ void MX_X_CUBE_BLE1_Init(void)
   else
     PRINTF("Error while adding Acc service.\n");
   
+  ret = Add_FFT_Service();
+
+    if (ret == BLE_STATUS_SUCCESS)
+      PRINTF("FFT service added successfully.\n");
+    else
+      PRINTF("Error while adding FFT service.\n");
 
   /*ret = Add_Environmental_Sensor_Service();
   

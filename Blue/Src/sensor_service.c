@@ -127,11 +127,11 @@ tBleStatus Add_FFT_Service(void)
 
 	if (ret != BLE_STATUS_SUCCESS) goto fail;
 
-	  PRINTF("Service ACC added. Handle 0x%04X, Free fall Charac handle: 0x%04X, Acc Charac handle: 0x%04X\n",accServHandle, freeFallCharHandle, accCharHandle);
+	  PRINTF("Service FFT added. Handle 0x%04X, Free fall Charac handle: 0x%04X, Acc Charac handle: 0x%04X\n",accServHandle, freeFallCharHandle, accCharHandle);
 	  return BLE_STATUS_SUCCESS;
 
 	fail:
-	  PRINTF("Error while adding ACC service.\n");
+	  PRINTF("Error while adding FFT service.\n");
 	  return BLE_STATUS_ERROR ;
 }
 
@@ -489,7 +489,7 @@ void setConnectable(void)
 {  
   tBleStatus ret;
   
-  const char local_name[] = {AD_TYPE_COMPLETE_LOCAL_NAME,'B','l','u','e','N','R','G'};
+  const char local_name[] = {AD_TYPE_COMPLETE_LOCAL_NAME,'S','m','a','r','t','H','e','l','m','e','t'};
   
   /* disable scan response */
   hci_le_set_scan_resp_data(0,NULL);
