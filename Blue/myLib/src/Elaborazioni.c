@@ -47,11 +47,11 @@
 
 static const float frequencyWeight_Z[n_F] = {0.991, 1.012, 1.022, 1.024, 1.013, 0.974, 0.891, 0.776,
 		                                  0.647, 0.512, 0.409, 0.325, 0.256, 0.199, 0.156, 0.118, 0.0844,
-										  0.0567, 0.0345, 0.0182, 0.00971, 0.00506, 0.00255, 0.00125};
+										  0.0567, 0.0345, 0.0182, 0.00971, 0.00506, 0.00255, 0};//0.00125};
 
 static const float frequencyWeight_XY[n_F] = {1.011, 0.890, 0.642, 0.512, 0.409, 0.323, 0.253, 0.212, 0.161,
 		                                  0.125, 0.100, 0.080, 0.0632, 0.0494, 0.0388, 0.0295, 0.0211, 0.0141,
-										  0.00863, 0.00455, 0.00243, 0.00126, 0.00064, 0.00031};
+										  0.00863, 0.00455, 0.00243, 0.00126, 0.00064, 0};//0.00031};
 
 
 void rotazione_X(float matrice[d_M][d_M], complex* buf_x, complex* buf_y, complex* buf_z, complex* workBuf_X_cplx){
@@ -126,20 +126,20 @@ void pesatura_Z(complex* buf_z){
 	        		 buf_z[i] =complex_multiply_r_c(frequencyWeight_Z[9],buf_z[i]);
 	        	 }
 
-	        	 if(i<=24)    {buf_z[i] =complex_multiply_r_c(frequencyWeight_Z[10],buf_z[i]);}
-	        	 if(i<=31)    { buf_z[i] =complex_multiply_r_c(frequencyWeight_Z[11],buf_z[i]);}
-	        	 if(i<=35)    { buf_z[i] =complex_multiply_r_c(frequencyWeight_Z[12],buf_z[i]);}
-	        	 if(i<=48)    { buf_z[i] =complex_multiply_r_c(frequencyWeight_Z[13],buf_z[i]);}
-	        	 if(i<=60)    { buf_z[i] =complex_multiply_r_c(frequencyWeight_Z[14],buf_z[i]);}
-	        	 if(i<=77)    { buf_z[i] =complex_multiply_r_c(frequencyWeight_Z[15],buf_z[i]);}
-	        	 if(i<=96)    { buf_z[i] =complex_multiply_r_c(frequencyWeight_Z[16],buf_z[i]);}
-	        	 if(i<=121)   {buf_z[i] =complex_multiply_r_c(frequencyWeight_Z[17],buf_z[i]);}
-	        	 if(i<=153)   {buf_z[i] =complex_multiply_r_c(frequencyWeight_Z[18],buf_z[i]);}
-	        	 if(i<=193)   {buf_z[i] =complex_multiply_r_c(frequencyWeight_Z[19],buf_z[i]);}
-	        	 if(i<=241)   {buf_z[i] =complex_multiply_r_c(frequencyWeight_Z[20],buf_z[i]);}
-	        	 if(i<=304)   {buf_z[i] =complex_multiply_r_c(frequencyWeight_Z[21],buf_z[i]);}
-	        	 if(i<=386)   {buf_z[i] =complex_multiply_r_c(frequencyWeight_Z[22],buf_z[i]);}
-	        	 if(i<=n_C/2) {buf_z[i] =complex_multiply_r_c(frequencyWeight_Z[23],buf_z[i]);}
+	        	 else if(i<=24)    {buf_z[i] =complex_multiply_r_c(frequencyWeight_Z[10],buf_z[i]);}
+	        	 else if(i<=31)    { buf_z[i] =complex_multiply_r_c(frequencyWeight_Z[11],buf_z[i]);}
+	        	 else if(i<=35)    { buf_z[i] =complex_multiply_r_c(frequencyWeight_Z[12],buf_z[i]);}
+	        	 else if(i<=48)    { buf_z[i] =complex_multiply_r_c(frequencyWeight_Z[13],buf_z[i]);}
+	        	 else if(i<=60)    { buf_z[i] =complex_multiply_r_c(frequencyWeight_Z[14],buf_z[i]);}
+	        	 else if(i<=77)    { buf_z[i] =complex_multiply_r_c(frequencyWeight_Z[15],buf_z[i]);}
+	        	 else if(i<=96)    { buf_z[i] =complex_multiply_r_c(frequencyWeight_Z[16],buf_z[i]);}
+	        	 else if(i<=121)   {buf_z[i] =complex_multiply_r_c(frequencyWeight_Z[17],buf_z[i]);}
+	        	 else if(i<=153)   {buf_z[i] =complex_multiply_r_c(frequencyWeight_Z[18],buf_z[i]);}
+	        	 else if(i<=193)   {buf_z[i] =complex_multiply_r_c(frequencyWeight_Z[19],buf_z[i]);}
+	        	 else if(i<=241)   {buf_z[i] =complex_multiply_r_c(frequencyWeight_Z[20],buf_z[i]);}
+	        	 else if(i<=304)   {buf_z[i] =complex_multiply_r_c(frequencyWeight_Z[21],buf_z[i]);}
+	        	 else if(i<=386)   {buf_z[i] =complex_multiply_r_c(frequencyWeight_Z[22],buf_z[i]);}
+	        	 else if(i<=n_C/2) {buf_z[i] =complex_multiply_r_c(frequencyWeight_Z[23],buf_z[i]);}
 	         }
 
 }
@@ -171,20 +171,20 @@ void pesatura_Y(complex* buf_y){
 	        		 buf_y[i] =complex_multiply_r_c(frequencyWeight_XY[9],buf_y[i]);
 	        	 }
 
-	        	 if(i<=24)    {buf_y[i] =complex_multiply_r_c(frequencyWeight_XY[10],buf_y[i]);}
-	        	 if(i<=31)    { buf_y[i] =complex_multiply_r_c(frequencyWeight_XY[11],buf_y[i]);}
-	        	 if(i<=35)    { buf_y[i] =complex_multiply_r_c(frequencyWeight_XY[12],buf_y[i]);}
-	        	 if(i<=48)    { buf_y[i] =complex_multiply_r_c(frequencyWeight_XY[13],buf_y[i]);}
-	        	 if(i<=60)    { buf_y[i] =complex_multiply_r_c(frequencyWeight_XY[14],buf_y[i]);}
-	        	 if(i<=77)    { buf_y[i] =complex_multiply_r_c(frequencyWeight_XY[15],buf_y[i]);}
-	        	 if(i<=96)    { buf_y[i] =complex_multiply_r_c(frequencyWeight_XY[16],buf_y[i]);}
-	        	 if(i<=121)   {buf_y[i] =complex_multiply_r_c(frequencyWeight_XY[17],buf_y[i]);}
-	        	 if(i<=153)   {buf_y[i] =complex_multiply_r_c(frequencyWeight_XY[18],buf_y[i]);}
-	        	 if(i<=193)   {buf_y[i] =complex_multiply_r_c(frequencyWeight_XY[19],buf_y[i]);}
-	        	 if(i<=241)   {buf_y[i] =complex_multiply_r_c(frequencyWeight_XY[20],buf_y[i]);}
-	        	 if(i<=304)   {buf_y[i] =complex_multiply_r_c(frequencyWeight_XY[21],buf_y[i]);}
-	        	 if(i<=386)   {buf_y[i] =complex_multiply_r_c(frequencyWeight_XY[22],buf_y[i]);}
-	        	 if(i<=n_C/2) {buf_y[i] =complex_multiply_r_c(frequencyWeight_XY[23],buf_y[i]);}
+	        	 else if(i<=24)    {buf_y[i] =complex_multiply_r_c(frequencyWeight_XY[10],buf_y[i]);}
+	        	 else if(i<=31)    { buf_y[i] =complex_multiply_r_c(frequencyWeight_XY[11],buf_y[i]);}
+	        	 else if(i<=35)    { buf_y[i] =complex_multiply_r_c(frequencyWeight_XY[12],buf_y[i]);}
+	        	 else if(i<=48)    { buf_y[i] =complex_multiply_r_c(frequencyWeight_XY[13],buf_y[i]);}
+	        	 else if(i<=60)    { buf_y[i] =complex_multiply_r_c(frequencyWeight_XY[14],buf_y[i]);}
+	        	 else if(i<=77)    { buf_y[i] =complex_multiply_r_c(frequencyWeight_XY[15],buf_y[i]);}
+	        	 else if(i<=96)    { buf_y[i] =complex_multiply_r_c(frequencyWeight_XY[16],buf_y[i]);}
+	        	 else if(i<=121)   {buf_y[i] =complex_multiply_r_c(frequencyWeight_XY[17],buf_y[i]);}
+	        	 else if(i<=153)   {buf_y[i] =complex_multiply_r_c(frequencyWeight_XY[18],buf_y[i]);}
+	        	 else if(i<=193)   {buf_y[i] =complex_multiply_r_c(frequencyWeight_XY[19],buf_y[i]);}
+	        	 else if(i<=241)   {buf_y[i] =complex_multiply_r_c(frequencyWeight_XY[20],buf_y[i]);}
+	        	 else if(i<=304)   {buf_y[i] =complex_multiply_r_c(frequencyWeight_XY[21],buf_y[i]);}
+	        	 else if(i<=386)   {buf_y[i] =complex_multiply_r_c(frequencyWeight_XY[22],buf_y[i]);}
+	        	 else if(i<=n_C/2) {buf_y[i] =complex_multiply_r_c(frequencyWeight_XY[23],buf_y[i]);}
 	         }
 
 }
@@ -217,20 +217,20 @@ void pesatura_X(complex* buf_x){
 	        		 buf_x[i] =complex_multiply_r_c(frequencyWeight_XY[9],buf_x[i]);
 	        	 }
 
-	        	 if(i<=24)    {buf_x[i] =complex_multiply_r_c(frequencyWeight_XY[10],buf_x[i]);}
-	        	 if(i<=31)    { buf_x[i] =complex_multiply_r_c(frequencyWeight_XY[11],buf_x[i]);}
-	        	 if(i<=35)    { buf_x[i] =complex_multiply_r_c(frequencyWeight_XY[12],buf_x[i]);}
-	        	 if(i<=48)    { buf_x[i] =complex_multiply_r_c(frequencyWeight_XY[13],buf_x[i]);}
-	        	 if(i<=60)    { buf_x[i] =complex_multiply_r_c(frequencyWeight_XY[14],buf_x[i]);}
-	        	 if(i<=77)    { buf_x[i] =complex_multiply_r_c(frequencyWeight_XY[15],buf_x[i]);}
-	        	 if(i<=96)    { buf_x[i] =complex_multiply_r_c(frequencyWeight_XY[16],buf_x[i]);}
-	        	 if(i<=121)   {buf_x[i] =complex_multiply_r_c(frequencyWeight_XY[17],buf_x[i]);}
-	        	 if(i<=153)   {buf_x[i] =complex_multiply_r_c(frequencyWeight_XY[18],buf_x[i]);}
-	        	 if(i<=193)   {buf_x[i] =complex_multiply_r_c(frequencyWeight_XY[19],buf_x[i]);}
-	        	 if(i<=241)   {buf_x[i] =complex_multiply_r_c(frequencyWeight_XY[20],buf_x[i]);}
-	        	 if(i<=304)   {buf_x[i] =complex_multiply_r_c(frequencyWeight_XY[21],buf_x[i]);}
-	        	 if(i<=386)   {buf_x[i] =complex_multiply_r_c(frequencyWeight_XY[22],buf_x[i]);}
-	        	 if(i<=n_C/2) {buf_x[i] =complex_multiply_r_c(frequencyWeight_XY[23],buf_x[i]);}
+	        	 else if(i<=24)    {buf_x[i] =complex_multiply_r_c(frequencyWeight_XY[10],buf_x[i]);}
+	        	 else if(i<=31)    { buf_x[i] =complex_multiply_r_c(frequencyWeight_XY[11],buf_x[i]);}
+	        	 else if(i<=35)    { buf_x[i] =complex_multiply_r_c(frequencyWeight_XY[12],buf_x[i]);}
+	        	 else if(i<=48)    { buf_x[i] =complex_multiply_r_c(frequencyWeight_XY[13],buf_x[i]);}
+	        	 else if(i<=60)    { buf_x[i] =complex_multiply_r_c(frequencyWeight_XY[14],buf_x[i]);}
+	        	 else if(i<=77)    { buf_x[i] =complex_multiply_r_c(frequencyWeight_XY[15],buf_x[i]);}
+	        	 else if(i<=96)    { buf_x[i] =complex_multiply_r_c(frequencyWeight_XY[16],buf_x[i]);}
+	        	 else if(i<=121)   {buf_x[i] =complex_multiply_r_c(frequencyWeight_XY[17],buf_x[i]);}
+	        	 else if(i<=153)   {buf_x[i] =complex_multiply_r_c(frequencyWeight_XY[18],buf_x[i]);}
+	        	 else if(i<=193)   {buf_x[i] =complex_multiply_r_c(frequencyWeight_XY[19],buf_x[i]);}
+	        	 else if(i<=241)   {buf_x[i] =complex_multiply_r_c(frequencyWeight_XY[20],buf_x[i]);}
+	        	 else if(i<=304)   {buf_x[i] =complex_multiply_r_c(frequencyWeight_XY[21],buf_x[i]);}
+	        	 else if(i<=386)   {buf_x[i] =complex_multiply_r_c(frequencyWeight_XY[22],buf_x[i]);}
+	        	 else if(i<=n_C/2) {buf_x[i] =complex_multiply_r_c(frequencyWeight_XY[23],buf_x[i]);}
 	         }
 
 }

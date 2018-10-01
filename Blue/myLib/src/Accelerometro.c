@@ -46,7 +46,7 @@ void myGyrAcc_StructInit(MyGyrAcc_InitTypeDef *MyGyrAcc_InitStruct)
 	 	  MyGyrAcc_InitStruct->MyGyrFull_Scale = GYR_FULLSCALE_245;
 	 	  MyGyrAcc_InitStruct->MyGyrBandwith_Sel = BANDWITH_00;
 	 	  MyGyrAcc_InitStruct->MyAccOutput_DataRate = ACC_ODR_7;
-	 	  MyGyrAcc_InitStruct->MyAccFull_Scale = ACC_FULLSCALE_10;
+	 	  MyGyrAcc_InitStruct->MyAccFull_Scale = ACC_FULLSCALE_01;
 	 	  MyGyrAcc_InitStruct->MyAcc_Bandwith_Sel = BW_SCAL_ODR_0;
 	 	  MyGyrAcc_InitStruct->My_Acc_AntiAliasingBwSel = BW_XL_00;
 }
@@ -113,9 +113,9 @@ void myAcc_Handler(void)
 		else
 		{
 			//Salvo i campioni che via via si vanno presentando
-			storeBuf_X[cont] = ((((float)prev_acc[0])*LINEAR_ACC_SENSE1)/1000)*GRAVITY_ACC;
-			storeBuf_Y[cont] = ((((float)prev_acc[1])*LINEAR_ACC_SENSE1)/1000)*GRAVITY_ACC;
-			storeBuf_Z[cont] = ((((float)prev_acc[2])*LINEAR_ACC_SENSE1)/1000)*GRAVITY_ACC;
+			storeBuf_X[cont] = ((((float)prev_acc[0])*LINEAR_ACC_SENSE3)/1000)*GRAVITY_ACC;
+			storeBuf_Y[cont] = ((((float)prev_acc[1])*LINEAR_ACC_SENSE3)/1000)*GRAVITY_ACC;
+			storeBuf_Z[cont] = ((((float)prev_acc[2])*LINEAR_ACC_SENSE3)/1000)*GRAVITY_ACC;
 			cont++;
 		}
 

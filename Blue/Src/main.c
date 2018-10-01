@@ -242,7 +242,7 @@ int main(void)
 
 
 
-			for(int j=0; j<=30; j++)
+			for(int j=1; j<=30; j++)
 			{
 				if(j<=6) { fftx1_6 += fft_X[j].re*fft_X[j].re + fft_X[j].im*fft_X[j].im;
 				           ffty1_6 += fft_Y[j].re*fft_Y[j].re + fft_Y[j].im*fft_Y[j].im;
@@ -389,7 +389,8 @@ int main(void)
 				FFT_Update(&i_frequency);
 			}
 
-			printf("exec_time:%d\r\n",(uint16_t)(HAL_GetTick()- savedTick));
+			//printf("exec_time:%d\r\n",(uint16_t)(HAL_GetTick()- savedTick));
+			printf("A8:%f\r\n",a8[windowCont]);
 			statoCorrente = ATTESA;
 			break;
 		}
